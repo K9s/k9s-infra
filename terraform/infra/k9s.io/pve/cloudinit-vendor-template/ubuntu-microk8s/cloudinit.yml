@@ -1,0 +1,12 @@
+#cloud-config
+packages:
+ - qemu-guest-agent
+ - nfs-common
+ - open-iscsi
+
+runcmd:
+  - timedatectl set-timezone America/Los_Angeles
+  - systemctl start qemu-guest-agent
+  - snap install microk8s --classic --channel=1.21
+  - usermod -a -G microk8s ubuntu
+  - snap alias microk8s.kubectl kubectl

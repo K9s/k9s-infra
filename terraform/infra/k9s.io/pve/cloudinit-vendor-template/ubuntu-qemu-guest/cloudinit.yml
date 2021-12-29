@@ -1,0 +1,7 @@
+#cloud-config
+packages:
+ - qemu-guest-agent
+
+runcmd:
+  - timedatectl set-timezone America/Los_Angeles
+  - systemctl start qemu-guest-agent

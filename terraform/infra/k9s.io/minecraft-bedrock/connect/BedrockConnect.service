@@ -1,0 +1,13 @@
+[Unit]
+ Description = BedrockConnect
+ After network.target = BedrockConnect.service
+[Service]
+ Type = forking
+ Restart=always
+ RestartSec=1
+ SuccessExitStatus=143
+ ExecStart = /usr/local/bin/BedrockConnect.sh start
+ ExecStop = /usr/local/bin/BedrockConnect.sh stop
+ ExecReload = /usr/local/bin/BedrockConnect.sh reload
+[Install]
+ WantedBy=multi-user.target
