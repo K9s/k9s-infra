@@ -1,0 +1,43 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: longhorn
+spec:
+  releaseName: longhorn
+  chart:
+    spec:
+      chart: longhorn
+      sourceRef:
+        kind: HelmRepository
+        name: longhorn
+        namespace: longhorn-system
+      version: "1.2.3"
+  values:
+    persistence:
+      defaultClassReplicaCount: 1
+    ingress:
+      tls: true
+      enabled: true
+      host: longhorn.${environment}.${domain}
+      annotations:
+        kubernetes.io/tls-acme: "true"
+#        nginx.ingress.kubernetes.io/auth-type: basic
+#        nginx.ingress.kubernetes.io/auth-secret: basic-auth
+#        nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+  interval: 1h0m0s
+  postRenderers:
+    - kustomize:
+        patchesStrategicMerge:
+          - apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: longhorn-driver-deployer
+              namespace: longhorn-system
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: longhorn-driver-deployer
+                      env:
+                        - name: KUBELET_ROOT_DIR
+                          value: /var/snap/microk8s/common/var/lib/kubelet

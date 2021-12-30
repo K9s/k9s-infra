@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-example
+spec:
+  # Secret names are always required.
+  secretName: letsencrypt-example-production
+
+  dnsNames:
+    - letsencrypt-example-production.${environment}.${domain}
+
+  issuerRef:
+    name: letsencrypt-route53-production
+    kind: ClusterIssuer

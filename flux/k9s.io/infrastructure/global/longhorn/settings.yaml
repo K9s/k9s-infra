@@ -1,0 +1,40 @@
+---
+apiVersion: longhorn.io/v1beta1
+kind: Setting
+metadata:
+  name: storage-over-provisioning-percentage
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+value: '400'
+---
+apiVersion: longhorn.io/v1beta1
+kind: Setting
+metadata:
+  name: replica-auto-balance
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+value: 'best-effort'
+---
+apiVersion: longhorn.io/v1beta1
+kind: Setting
+metadata:
+  name: backup-target
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+value: s3://dev-longhorn-backups@default/
+---
+apiVersion: longhorn.io/v1beta1
+kind: Setting
+metadata:
+  name: backup-target-credential-secret
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+value: aws-secret
+---
+apiVersion: longhorn.io/v1beta1
+kind: Setting
+metadata:
+  name: node-down-pod-deletion-policy
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+value: delete-deployment-pod

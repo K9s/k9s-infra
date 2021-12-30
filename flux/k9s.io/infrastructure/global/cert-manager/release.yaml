@@ -1,0 +1,24 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: cert-manager
+spec:
+  chart:
+    spec:
+      chart: cert-manager
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+        namespace: cert-manager
+      version: "1.6.1"
+  values:
+    installCRDs: true
+    ingressShim:
+      defaultIssuerName: letsencrypt-route53-production
+      defaultIssuerKind: ClusterIssuer
+      defaultIssuerGroup: cert-manager.io
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  interval: 1h0m0s

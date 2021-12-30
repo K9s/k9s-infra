@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/acme/solvers/0/dns01/route53/accessKeyID
+  value: "AKIA52RV2VYP7FXZET54"
+- op: replace
+  path: /spec/acme/solvers/0/dns01/route53/hostedZoneID
+  value: "Z029600614L3XCL6C0S5R"
