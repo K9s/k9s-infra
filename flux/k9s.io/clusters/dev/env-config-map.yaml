@@ -4,5 +4,5 @@ metadata:
   name: env-config-map
   namespace: flux-system
 data:
-  domain: apps.k9s.io
+  domain: app.k9s.io
   environment: dev
