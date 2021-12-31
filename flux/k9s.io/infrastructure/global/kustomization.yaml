@@ -10,3 +10,4 @@ resources:
   - metallb
   - monitoring/kube-prometheus-stack
   - monitoring/monitoring-config
+  - eck
