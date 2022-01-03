@@ -21,11 +21,15 @@ inputs = {
   clone                 = dependency.cloudimg.outputs.name
   vendor_storage_target = dependency.cloudinit.outputs.storage_target
 
-  num_instances = 5
+  num_instances = 3
 
-  storage_target = "nvme"
+  storage_target = "rbd-ssd"
 
-  memory  = 16384
-  cores   = 8
+  memory  = 32768
+  cores   = 6
   sockets = 2
+
+  use_pet_name = false
+
+#  network_bridge = "vmbr3"
 }

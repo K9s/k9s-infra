@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-config-map
+  namespace: flux-system
+data:
+  domain: app.k9s.io
+  environment: prod
+  metallb_pool: "192.168.80.1-192.168.80.254"

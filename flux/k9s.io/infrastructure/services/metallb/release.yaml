@@ -23,4 +23,4 @@ spec:
         - name: generic-cluster-pool
           protocol: layer2
           addresses:
-            - 192.168.80.1-192.168.80.254
+            - ${metallb_pool}

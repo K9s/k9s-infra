@@ -18,8 +18,9 @@ terraform {
 
 provider "proxmox" {
   pm_tls_insecure = true
-  pm_api_url      = "https://${local.pve_vars.locals.target_node}.${local.pve_vars.locals.domain_name}:8006/api2/json"
+  pm_api_url      = "https://${local.pve_vars.locals.target_nodes[0]}.${local.pve_vars.locals.domain_name}:8006/api2/json"
   pm_parallel     = 20
+  pm_timeout      = 600
 }
 EOF
 }

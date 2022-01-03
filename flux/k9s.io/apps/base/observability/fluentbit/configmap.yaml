@@ -1,0 +1,491 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  labels:
+    k8s-app: fluent-bit
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush                   1
+        Log_Level               info
+        Daemon                  off
+        Parsers_File            parsers.conf
+        HTTP_Server             On
+        HTTP_Listen             0.0.0.0
+        HTTP_Port               2020
+        Health_Check            On
+        HC_Errors_Count         5
+        HC_Retry_Failure_Count  5
+        HC_Period               5
+        storage.metrics         true
+        storage.path            /var/log/flb_buffer
+
+    @INCLUDE input-kubernetes.conf
+    @INCLUDE input-systemd.conf
+    @INCLUDE input-system-logs.conf
+    @INCLUDE filter-kubernetes.conf
+    @INCLUDE filter-raw-logs.conf
+    @INCLUDE filter-structured-logs.conf
+    @INCLUDE output-elasticsearch.conf
+
+  input-kubernetes.conf: |
+    [INPUT]
+        Name                  tail
+        Tag                   input.kube.cluster.*
+        Path                  /var/log/containers/*.log
+        Parser                cri
+        multiline.parser      cri, go, python, java
+        DB                    /var/log/flb_kube.db
+        Mem_Buf_Limit         20MB
+        Buffer_Chunk_Size     256k
+        Buffer_Max_Size       256k
+        Skip_Long_Lines       On
+        Skip_Empty_Lines      On
+        Refresh_Interval      10
+
+  input-system-logs.conf: |
+    [INPUT]
+        Name                  tail
+        Tag                   input.host.auth.*
+        Path                  /var/log/auth.log
+        DB                    /var/log/flb_auth_log.db
+        Mem_Buf_Limit         20MB
+        Buffer_Chunk_Size     256k
+        Buffer_Max_Size       256k
+        Skip_Long_Lines       On
+        Skip_Empty_Lines      On
+        Refresh_Interval      10
+
+  input-systemd.conf: |
+    [INPUT]
+        Name                  systemd
+        Tag                   input.host.systemd.*
+        Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-kubelite.service
+        Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-containerd.service
+        Systemd_Filter        _SYSTEMD_UNIT=fstrim.service
+        Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
+        Systemd_Filter        _SYSTEMD_UNIT=init.scope
+        DB                    /var/log/flb_systemd_microk8s.db
+        Mem_Buf_Limit         20MB
+        Strip_Underscores     On
+
+  filter-kubernetes.conf: |
+    [FILTER]
+        Name                  kubernetes
+        Match                 input.kube.cluster.*
+        Kube_URL              https://kubernetes.default.svc:443
+        Kube_CA_File          /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File       /var/run/secrets/kubernetes.io/serviceaccount/token
+        Kube_Tag_Prefix       input.kube.cluster.var.log.containers.
+        Merge_Log             Off
+        K8S-Logging.Parser    On
+        K8S-Logging.Exclude   On
+        Annotations           On
+        Labels                Off
+
+    [FILTER]
+        Name                  nest
+        Match                 input.kube.cluster.*
+        Operation             lift
+        Nested_under          kubernetes
+        Add_prefix            kubernetes_
+
+    [FILTER]
+        Name                  nest
+        Match                 input.kube.cluster.*
+        Operation             lift
+        Nested_under          kubernetes_labels
+        Add_prefix            kubernetes_labels/
+
+    [FILTER]
+        Name                  nest
+        Match                 input.kube.cluster.*
+        Operation             lift
+        Nested_under          kubernetes_annotations
+        Add_prefix            kubernetes_annotations/
+
+  filter-raw-logs.conf: |
+    [FILTER]
+        Name                  lua
+        Match                 input.*
+        script                sanitize_records.lua
+        call                  log_source
+        type_array_key        tags
+
+    [FILTER]
+        Name                  rewrite_tag
+        Match                 input.*
+        Rule                  $_log_source ^. final.raw-logs.$TAG[1].$TAG[2] true
+        Emitter_Name          raw-logs
+
+  filter-structured-logs.conf: |
+    [FILTER]
+        Name                  rewrite_tag
+        Match                 input.*
+        Rule                  $_log_source ^. structured-logs.ingest.$TAG[1].$TAG[2] false
+        Emitter_Name          structured-logs
+
+    [FILTER]
+        Name                  modify
+        Match                 structured-logs.*
+        Rename                message   log
+        Rename                MESSAGE   log
+        Rename                msg       log
+
+    [FILTER]
+        Name                  modify
+        Match                 structured-logs.*
+        Copy                  log _raw_log
+
+    [FILTER]
+        name                  multiline
+        match                 structured-logs.*
+        multiline.key_content log
+        multiline.parser      go, python, java
+
+    [FILTER]
+        Name                  parser
+        Match                 structured-logs.*
+        Key_Name              log
+        Reserve_Data          On
+        Preserve_Key          Off
+        Parser                json
+        Parser                kube-logs
+        Parser                docker-daemon
+        Parser                containerd
+        Parser                nginx
+        Parser                apache
+        Parser                apache2
+        Parser                apache_error
+        Parser                k8s-nginx-ingress
+        Parser                kibana-logs
+        Parser                simple-datetime-msg-1
+        Parser                simple-datetime-msg-2
+        Parser                simple-datetime-with-level
+
+    #    [FILTER]
+    #        Name                  parser
+    #        Match                 structured-logs.*
+    #        Key_Name              log
+    #        Reserve_Data          On
+    #        Preserve_Key          On
+    #        Parser                logfmt
+
+    [FILTER]
+        Name                  modify
+        Name                  modify
+        Match                 structured-logs.*
+        Rename                log_level   level
+        Rename                severity    level
+        Rename                lvl         level
+        Rename                err         msg
+        Rename                error       msg
+        Rename                message     msg
+        Rename                host        hostname
+        Rename                @timestamp  log_timestamp
+
+    [FILTER]
+        Name                  lua
+        Match                 structured-logs.*
+        script                sanitize_records.lua
+        call                  func
+        type_array_key        tags
+
+    ### Reprocessing START
+    [FILTER]
+        Name                  record_modifier
+        Match                 structured-logs.reprocess.log
+        Record                _reprocessed_log true
+
+    [FILTER]
+        Name                  rewrite_tag
+        Match                 structured-logs.ingest.*
+        Rule                  $log ^. structured-logs.reprocess.log false
+        Emitter_Name          structured-logs.reprocess.log
+
+    [FILTER]
+        Name                  record_modifier
+        Match                 structured-logs.reprocess.msg
+        Record                _reprocessed_msg true
+
+    [FILTER]
+        Name                  rewrite_tag
+        Match                 structured-logs.ingest.*
+        Rule                  $msg      ^. structured-logs.reprocess.msg false
+        Emitter_Name          structured-logs.reprocess.msg
+
+    [FILTER]
+        Name                  record_modifier
+        Match                 structured-logs.reprocess.logmsg
+        Record                _reprocessed_logmsg true
+
+    [FILTER]
+        Name                  rewrite_tag
+        Match                 structured-logs.reprocess.log
+        Rule                  $msg      ^. structured-logs.reprocess.logmsg false
+        Emitter_Name          structured-logs.reprocess.logmsg
+
+    ### Reprocessing END
+
+    [FILTER]
+        Name                  modify
+        Match                 structured-logs.*
+        Rename                log msg
+
+    [FILTER]
+        Name                  parser
+        Match                 structured-logs.*
+        Key_Name              msg
+        Reserve_Data          On
+        Preserve_Key          Off
+        Parser                pass-through
+        Unescape_Key          On
+
+    [FILTER]
+        Name                  rewrite_tag
+        Emitter_Storage.type  filesystem
+        Match                 structured-logs.*
+        Rule                  $level ^(.*) final.structured-logs.$1 false
+        Emitter_Name          final-level-logs
+
+    [FILTER]
+        Name                  rewrite_tag
+        Emitter_Storage.type  filesystem
+        Match                 structured-logs.*
+        Rule                  $_raw_log ^. final.structured-logs.nolevel false
+        Emitter_Name          final-nolevel-logs
+
+    [FILTER]
+        Name                  lua
+        Match                 final.*
+        script                sanitize_records.lua
+        call                  log_tag
+        type_array_key        tags
+
+    #[FILTER]
+    #    Name    grep
+    #    Match   *
+    ##    Exclude level info
+    #    Exclude level debug
+
+  output-elasticsearch.conf: |
+    [OUTPUT]
+        Name                      es
+        Host                      logs-es-http
+        Match                     final.structured-logs.*
+        Index                     logs-flb-structured
+        Type                      flb
+        Generate_ID               On
+        Suppress_Type_Name        On
+        Port                      9200
+        Time_Key_Nanos            On
+        Retry_Limit               False
+        tls                       On
+        tls.verify                Off
+        Trace_Error               On
+        Buffer_Size               50M
+
+    [OUTPUT]
+        Name                      es
+        Host                      logs-es-http
+        Match                     final.raw-logs.*
+        Index                     logs-flb-raw
+        Type                      flb_raw
+        Generate_ID               On
+        Suppress_Type_Name        On
+        Port                      9200
+        Time_Key_Nanos            On
+        Retry_Limit               False
+        tls                       On
+        tls.verify                Off
+        Trace_Error               On
+        Buffer_Size               50M
+
+  sanitize_records.lua: |
+    function all_trim(s)
+       local from = s:match"^%s*()"
+       return from > #s and "" or s:match(".*%S", from)
+    end
+    
+    function logfmt(t)
+        if type(t) == "table" then
+            result = ""
+            for k,v in pairs(t) do 
+              if type(v) == "table" then
+                value = logfmt(v)
+              else
+                value = v
+              end
+    
+              result = result .. k .. "=" .. tostring(value) .. " " 
+            end
+            return result:gsub("%s$", "")
+        else
+            return t
+        end
+    end
+    
+    function log_source(tag, timestamp, record)
+      new_record = record
+      new_record["_log_source"] = tag
+      return 2, timestamp, new_record
+    end
+    
+    function log_tag(tag, timestamp, record)
+      new_record = record
+      new_record["_log_tag"] = tag
+      return 2, timestamp, new_record
+    end
+
+    function func(tag, timestamp, record)
+        new_record = {}
+
+        for key, value in pairs(record) do
+            if type(value) == "string" then 
+               value = all_trim(value)
+    
+               number = tonumber(value)
+               if number then
+                   value = number
+               else
+                   value = tostring(value)
+               end
+
+               if value == "true" then value = true end
+               if value == "false" then value = false end
+            end
+            key = string.lower(key):gsub("%s", "_"):gsub("%.", "_")
+
+            if key == "level" then
+                value = string.upper(value)
+    
+                if value == "T" then value = "TRACE" end
+                if value == "I" then value = "INFO" end
+                if value == "W" or value == "WARNING" then value = "WARN" end
+                if value == "E" or value == "ERR" or value == "EROR" then value = "ERROR" end
+                if value == "F" then value = "FATAL" end
+            end
+
+            if key:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") and value ~= "-" and value ~= "" then
+                new_record[key] = value
+            else
+                if not new_record["rejected_fields"] then new_record["rejected_fields"] = "" end
+                new_record["rejected_fields"] = new_record["rejected_fields"] .. key .. "=" .. tostring(logfmt(value)) .. " "
+            end
+    
+            --print("Key:", key, "Value:", new_record[key], "Value:", type(new_record[key]))
+        end
+
+        if new_record["rejected_fields"] then new_record["rejected_fields"]:gsub("%s$", "") end 
+
+        --new_record["_ingest_timestamp"] = os.time(os.date("!*t"))
+
+        return 2, timestamp, new_record
+    end
+
+  parsers.conf: |
+    [PARSER]
+        Name        apache
+        Format      regex
+        Regex       ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
+        Time_Key    time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+    
+    [PARSER]
+        Name        apache2
+        Format      regex
+        Regex       ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*)\s*(?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$
+        Time_Key    time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name        apache_error
+        Format      regex
+        Regex       ^\[[^ ]* (?<time>[^\]]*)\] \[(?<level>[^\]]*)\](?: \[pid (?<pid>[^\]]*)\])?( \[client (?<client>[^\]]*)\])? (?<message>.*)$
+
+    [PARSER]
+        Name        nginx
+        Format      regex
+        Regex       ^(?<remote>[^ ]*) (?<host>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*)\s*(?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")$
+        Time_Key    time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        # https://rubular.com/r/IhIbCAIs7ImOkc
+        Name        k8s-nginx-ingress
+        Format      regex
+        Regex       ^(?<host>[^ ]*) - (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*)\s*(?<size>[^ ]*) "(?<referer>[^\"]*)" "(?<agent>[^\"]*)" (?<request_length>[^ ]*) (?<request_time>[^ ]*) \[(?<proxy_upstream_name>[^ ]*)\] (\[(?<proxy_alternative_upstream_name>[^ ]*)\] )?(?<upstream_addr>[^ ]*) (?<upstream_response_length>[^ ]*) (?<upstream_response_time>[^ ]*) (?<upstream_status>[^ ]*) (?<reg_id>[^ ]*).*$
+        Time_Key    time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+    
+    [PARSER]
+        Name        json
+        Format      json
+
+    [PARSER]
+        Name        logfmt
+        Format      logfmt
+    
+    [PARSER]
+        Name        kibana-logs
+        Format      regex
+        Regex       ^(?<method>POST|GET|PUT|DELETE) (?<endpoint>[^ ]*) (?<code>[^ ]*) (?<latency_ms>[^ ]*)ms| \- (?<size>\d*.\d*|\d*)(?<size_unit>[^ ]*)$
+    
+    [PARSER]
+        Name        docker-daemon
+        Format      regex
+        Regex       time="(?<time>[^ ]*)" level=(?<level>[^ ]*) msg="(?<msg>[^ ].*)"
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S
+
+    [PARSER]
+        # https://rubular.com/r/KKkEvIYKEvj13a
+        Name        kube-logs
+        Format      regex
+        Regex       ^(?<severity>W|I|E|F)+(?<code>\d{4})+\s(?<time>\d*:\d*:\d*\.\d*)\s*(?<pid>[^\]]*)\s(?<file>\w*\.\w*):(?<line>\d*)\](?<msg>.*)$
+        Time_Key    time
+        Time_Format %H:%M:%S.%L
+
+    [PARSER]
+        Name        cri
+        Format      regex
+        Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+
+    [PARSER]
+        Name        containerd
+        Format      regex
+        Regex       ^(?<time>[^\]]*) \[(?<level>[A-Z]*)\]\[([^ ]*)\] (?<file>[^ ]*) (?<line>[\d ]*): (?<msg>.*)
+        Time_Key    time
+        Time_Format %Y-%m-%d %H:%M:%S.%L
+
+    [PARSER]
+        Name        simple-datetime-with-level
+        Format      regex
+        Regex       ^\[(?<time>\d*-\d*-\d* \d*:\d*:\d*:\d*) (?<level>[^ ]*)\](?<msg>.*)$
+        Time_Key    time
+        Time_Format %Y-%m-%d %H:%M:%S:%L
+
+    [PARSER]
+        Name        simple-datetime-msg-1
+        Format      regex
+        Regex       ^\[(?<time>\d*-\d*-\d* \d*:\d*:\d*)\](?<msg>.*)$
+        Time_Key    time
+        Time_Format %Y-%m-%d %H:%M:%S
+    
+    [PARSER]
+        Name        simple-datetime-msg-2
+        Format      regex
+        Regex       ^[\[]?(?<time>\d*\/\d*\/\d* \d*:\d*:\d*)[\]]?(?<msg>.*)$
+        Time_Key    time
+        Time_Format %Y/%m/%d %H:%M:%S
+
+    [PARSER]
+        Name                pass-through
+        Format              regex
+        Regex               ^(?<message>.*)$
+        Decode_Field_As     escaped     msg

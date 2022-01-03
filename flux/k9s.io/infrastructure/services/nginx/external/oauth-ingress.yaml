@@ -1,0 +1,33 @@
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  annotations:
+#    nginx.ingress.kubernetes.io/auth-url: "https://auth.${environment}.${domain}/oauth2/auth"
+#    nginx.ingress.kubernetes.io/auth-signin: "https://auth.${environment}.${domain}/oauth2/start?rd=$escaped_request_uri"
+#spec:
+#  ingressClassName: external-nginx
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: oauth2-proxy
+  namespace: kube-system
+  annotations:
+    kubernetes.io/tls-acme: "true"
+spec:
+  ingressClassName: nginx-external
+  rules:
+  - host: auth.${environment}.${domain}
+    http:
+      paths:
+      - path: /oauth2
+        pathType: Prefix
+        backend:
+          service:
+            name: oauth2-proxy
+            port:
+              number: 4180
+  tls:
+  - hosts:
+    - auth.${environment}.${domain}
+    secretName: oauth2-proxy-tls

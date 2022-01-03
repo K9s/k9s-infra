@@ -4,3 +4,5 @@ resources:
   - cert-manager
   - sealed-secrets
   - eck
+  - external-snapshotter
+  - reloader

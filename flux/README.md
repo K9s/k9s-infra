@@ -1,5 +1,5 @@
 
 Bootstrap Command
 ```bash
-flux bootstrap github   --owner=$GITHUB_USER   --repository=k9s-infra   --branch=main   --path=flux/k9s.io/clusters/dev   --personal
+flux bootstrap github --owner=K9s --repository=k9s-infra --branch=main --path=flux/k9s.io/clusters/prod
 ```

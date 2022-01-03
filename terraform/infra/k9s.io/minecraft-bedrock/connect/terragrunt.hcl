@@ -29,15 +29,22 @@ inputs = {
     {
       "name" : "KennedyCraft - XMAS",
       "iconUrl" : "https://i.imgur.com/3BmFZRE.png",
-      "address" : dependency.k8s_cluster.outputs.vm_connection_details.0.ip,
-      "port" : 32285
+      "address" : "192.168.80.3",
+      "port" : 19132
     },{
       "name" : "KennedyCraft - GH",
       "iconUrl" : "https://i.imgur.com/3BmFZRE.png",
-      "address" : dependency.k8s_cluster.outputs.vm_connection_details.0.ip,
-      "port" : 30003
+      "address" : "192.168.80.2",
+      "port" : 19132
+    },{
+      "name" : "KennedyCraft - NewYear",
+      "iconUrl" : "https://i.imgur.com/3BmFZRE.png",
+      "address" : "192.168.80.4",
+      "port" : 19132
     }
   ]
+
+  use_pet_name = false
 
   memory = 2048
   num_instances = 1

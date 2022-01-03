@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: longhorn-system
 resources:
   - settings.yaml
+  - aws-secret.yaml

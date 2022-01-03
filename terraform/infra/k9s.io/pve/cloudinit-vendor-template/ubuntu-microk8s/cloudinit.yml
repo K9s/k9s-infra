@@ -3,10 +3,14 @@ packages:
  - qemu-guest-agent
  - nfs-common
  - open-iscsi
+ - ceph-common
+ - rbd-nbd
 
 runcmd:
-  - timedatectl set-timezone America/Los_Angeles
+  - timedatectl set-timezone UTC
   - systemctl start qemu-guest-agent
   - snap install microk8s --classic --channel=1.21
   - usermod -a -G microk8s ubuntu
   - snap alias microk8s.kubectl kubectl
+  - echo '#!/bin/bash' > /etc/cron.hourly/fstrim && echo fstrim -av >> /etc/cron.hourly/fstrim
+  - chmod +x /etc/cron.hourly/fstrim

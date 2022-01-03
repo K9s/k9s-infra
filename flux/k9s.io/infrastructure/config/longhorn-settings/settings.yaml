@@ -5,7 +5,7 @@ metadata:
   name: storage-over-provisioning-percentage
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
-value: '400'
+value: '200'
 ---
 apiVersion: longhorn.io/v1beta1
 kind: Setting
@@ -13,7 +13,7 @@ metadata:
   name: replica-auto-balance
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
-value: 'best-effort'
+value: 'least-effort'
 ---
 apiVersion: longhorn.io/v1beta1
 kind: Setting
@@ -21,7 +21,7 @@ metadata:
   name: backup-target
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
-value: s3://dev-longhorn-backups@default/
+value: s3://${environment}-longhorn-backups@default/
 ---
 apiVersion: longhorn.io/v1beta1
 kind: Setting

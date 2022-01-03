@@ -3,6 +3,9 @@ kind: Kustomization
 resources:
   - ../base/minecraft
   - ../base/minecraft/bedrock
-  - kennedycraft-xmas
-  - kennedycraft-gh
-  - kennedycraft-newyear
+  - kennedycraft
+#  - kennedycraft-xmas
+#  - kennedycraft-gh
+#  - kennedycraft-newyear
+#  - ../base/observability
+  - obsessionsbycrystal-wp

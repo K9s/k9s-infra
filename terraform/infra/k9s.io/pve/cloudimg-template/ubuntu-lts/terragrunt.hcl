@@ -10,7 +10,5 @@ terraform {
 inputs = {
   cloudimg_url = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
 
-  storage_target = "nvme"
-
   vm_id = 10000
 }

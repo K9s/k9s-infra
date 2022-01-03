@@ -31,7 +31,7 @@ module "get_join_token" {
     nodes = join(",", module.vms.*.name)
   }
 
-  command = "${local.ssh_base} 'sudo microk8s add-node -l 120'"
+  command = "${local.ssh_base} 'sudo microk8s add-node -l 1200'"
 }
 
 resource "null_resource" "join_cluster" {

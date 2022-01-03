@@ -3,10 +3,12 @@ locals {
 }
 
 resource "null_resource" "create_template_vm" {
+  count = length(var.target_nodes)
+
   connection {
     type        = "ssh"
     user        = "root"
-    host        = "${var.target_node}.${var.domain_name}"
+    host        = "${var.target_nodes[count.index]}.${var.domain_name}"
     port        = 22
   }
 
@@ -17,17 +19,17 @@ resource "null_resource" "create_template_vm" {
   provisioner "remote-exec" {
     inline = [
       "curl -o '${local.cloudimg}.img' -z '${local.cloudimg}.img' ${var.cloudimg_url}",
-      "qm create ${var.vm_id} --memory 512 --net0 virtio,bridge=vmbr0",
-      "qm set ${var.vm_id} --name ${local.cloudimg}",
-      "qm set ${var.vm_id} --delete scsi0",
-      "qm set ${var.vm_id} --delete unused0",
-      "qm importdisk ${var.vm_id} ${local.cloudimg}.img ${var.storage_target}",
-      "qm set ${var.vm_id} --scsihw virtio-scsi-pci --scsi0 ${var.storage_target}:vm-${var.vm_id}-disk-0",
-      "qm set ${var.vm_id} --ide2 local-lvm:cloudinit",
-      "qm set ${var.vm_id} --boot c --bootdisk scsi0",
-      "qm set ${var.vm_id} --serial0 socket --vga serial0",
-      "qm set ${var.vm_id} --machine q35",
-      "echo 'Manually convert the vm ${var.vm_id} to a template (sorry breaks with qm command)'"
+      "qm create ${var.vm_id + count.index} --memory 512 --net0 virtio,bridge=vmbr0",
+      "qm set ${var.vm_id + count.index} --name ${local.cloudimg}",
+      "qm set ${var.vm_id + count.index} --delete scsi0",
+      "qm set ${var.vm_id + count.index} --delete unused0",
+      "qm importdisk ${var.vm_id + count.index} ${local.cloudimg}.img ${var.storage_target}",
+      "qm set ${var.vm_id + count.index} --scsihw virtio-scsi-pci --scsi0 ${var.storage_target}:vm-${var.vm_id + count.index}-disk-0",
+      "qm set ${var.vm_id + count.index} --ide2 local-lvm:cloudinit",
+      "qm set ${var.vm_id + count.index} --boot c --bootdisk scsi0",
+      "qm set ${var.vm_id + count.index} --serial0 socket --vga serial0",
+      "qm set ${var.vm_id + count.index} --machine q35",
+      "echo 'Manually convert the vm ${var.vm_id + count.index} to a template (sorry breaks with qm command)'"
     ]
   }
 }

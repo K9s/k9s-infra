@@ -6,3 +6,4 @@ metadata:
 data:
   domain: app.k9s.io
   environment: dev
+  metallb_pool: "192.168.81.1-192.168.81.254"

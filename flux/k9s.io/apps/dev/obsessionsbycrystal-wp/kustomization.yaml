@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- namespace.yaml
+# - mariadb.sealed_secret.yaml
+# - mariadb.pvc.yaml
+# - mariadb.yaml
+# - wordpress.yaml
+# - wordpress.ingress.yaml

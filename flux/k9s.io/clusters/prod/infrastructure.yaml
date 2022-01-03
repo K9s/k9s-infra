@@ -1,0 +1,25 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: infrastructure-crds
+spec:
+  path: ./flux/k9s.io/infrastructure/crds
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: infrastructure-services
+spec:
+  path: ./flux/k9s.io/infrastructure/services
+  dependsOn:
+    - name: infrastructure-crds
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: infrastructure-config
+spec:
+  path: ./flux/k9s.io/infrastructure/config
+  dependsOn:
+    - name: infrastructure-services

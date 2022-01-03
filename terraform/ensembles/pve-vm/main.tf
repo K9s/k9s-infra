@@ -7,7 +7,7 @@ module "vms" {
 
   domain_name = var.domain_name
 
-  name = "${var.name}-${random_pet.cluster.id}"
+  name = var.use_pet_name ? "${var.name}-${random_pet.cluster.id}" : var.name
 
   clone = var.clone
 
@@ -21,6 +21,8 @@ module "vms" {
   sockets = var.sockets
 
   memory = var.memory
+
+  network_bridge = var.network_bridge
 }
 
 resource "random_pet" "cluster" {}

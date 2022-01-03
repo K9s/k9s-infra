@@ -1,0 +1,8 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: apps
+spec:
+  path: ./flux/k9s.io/apps/prod
+  dependsOn:
+    - name: infrastructure-config

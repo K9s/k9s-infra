@@ -45,7 +45,7 @@ resource "proxmox_vm_qemu" "this" {
   sockets = var.sockets
 
   # Hardware Options
-  cpu    = "kvm64"
+  cpu    = "host"
   scsihw = "virtio-scsi-pci"
 
   # PVE Options
@@ -55,12 +55,13 @@ resource "proxmox_vm_qemu" "this" {
   disk {
     type    = "scsi"
     storage = var.storage_target
-    ssd     = var.storage_target == "nvme" ? 1 : 0
+    ssd     = 1
     size    = var.storage_size
+    discard = "on"
   }
 
   network {
-    bridge = "vmbr0"
+    bridge = var.network_bridge
     model  = "virtio"
   }
 

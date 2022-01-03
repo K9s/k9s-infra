@@ -1,0 +1,25 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: logs
+spec:
+  version: 7.17.2
+  count: 1
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  elasticsearchRef:
+    name: logs
+  config:
+    xpack.security.enabled: false
+    server.publicBaseUrl: "https://logs.es.${environment}.${domain}"
+  podTemplate:
+    spec:
+      containers:
+        - name: kibana
+          readinessProbe:
+            httpGet:
+              path: "/status"
+              port: 5601
+              scheme: HTTP

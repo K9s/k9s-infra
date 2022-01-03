@@ -49,3 +49,15 @@ variable "sockets" {
 
   default = 1
 }
+
+variable "use_pet_name" {
+  type = bool
+
+  default = true
+}
+
+variable "network_bridge" {
+  type = string
+
+  default = "vmbr0"
+}

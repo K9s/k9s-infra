@@ -28,8 +28,8 @@ variable "storage_target" {
   default = "local-lvm"
 }
 
-variable "target_node" {
-  type = string
+variable "target_nodes" {
+  type = list(string)
 }
 
 variable "skip_provisioning" {
@@ -72,4 +72,16 @@ variable "sockets" {
   type = number
 
   default = 1
+}
+
+variable "use_pet_name" {
+  type = bool
+
+  default = true
+}
+
+variable "network_bridge" {
+  type = string
+
+  default = "vmbr0"
 }

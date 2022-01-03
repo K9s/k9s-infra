@@ -1,13 +1,20 @@
 locals {
-  storage_path = "/var/lib/vz/snippets/${var.name}.yml"
-  storage_target = "local:snippets/${var.name}.yml"
+  storage_paths = {
+    "local"   = "/var/lib/vz/snippets/${var.name}.yml"
+    "cephfs"  = "/mnt/pve/cephfs/snippets/${var.name}.yml"
+  }
+
+  storage_path    = local.storage_paths[var.template_storage_id]
+  storage_target  = "${var.template_storage_id}:snippets/${var.name}.yml"
 }
 
 resource "null_resource" "create_template_vm" {
+  count = length(var.target_nodes)
+
   connection {
     type        = "ssh"
     user        = "root"
-    host        = "${var.target_node}.${var.domain_name}"
+    host        = "${element(var.target_nodes, count.index)}.${var.domain_name}"
     port        = 22
   }
 

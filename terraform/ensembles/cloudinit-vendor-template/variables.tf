@@ -6,6 +6,12 @@ variable "domain_name" {
   type = string
 }
 
-variable "target_node" {
+variable "target_nodes" {
+  type = list(string)
+}
+
+variable "template_storage_id" {
   type = string
+
+  default = "local"
 }

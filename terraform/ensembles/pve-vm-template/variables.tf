@@ -1,15 +1,13 @@
 variable "vm_id" {
-  type = string
-
-  default = ""
+  type = number
 }
 
 variable "domain_name" {
   type = string
 }
 
-variable "target_node" {
-  type = string
+variable "target_nodes" {
+  type = list(string)
 }
 
 variable "storage_target" {

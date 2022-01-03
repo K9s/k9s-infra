@@ -21,15 +21,13 @@ spec:
       enabled: false
     grafana:
       defaultDashboardsTimezone: browser
-
       ingress:
         enabled: true
+        ingressClassName: nginx
         annotations:
           kubernetes.io/tls-acme: "true"
-
         hosts:
           - grafana.${environment}.${domain}
-
         tls:
           - secretName: grafana-monitoring-tls
             hosts:
@@ -45,6 +43,7 @@ spec:
         storageSpec:
           volumeClaimTemplate:
             spec:
+              storageClassName: rbd-slow
               resources:
                 requests:
-                  storage: 50Gi
+                  storage: 500Gi

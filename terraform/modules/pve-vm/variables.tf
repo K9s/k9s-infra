@@ -67,3 +67,9 @@ variable "ssh_keys" {
 
   default = []
 }
+
+variable "network_bridge" {
+  type = string
+
+  default = "vmbr0"
+}

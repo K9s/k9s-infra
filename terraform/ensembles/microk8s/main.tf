@@ -7,23 +7,25 @@ module "vms" {
 
   domain_name = var.domain_name
 
-  name = "${var.name}-${random_pet.cluster.id}"
+  name = var.use_pet_name ? "${var.name}-${random_pet.cluster.id}" : var.name
 
   clone = var.clone
 
   vendor_storage_target = var.vendor_storage_target
   storage_target        = var.storage_target
 
-  target_node = var.target_node
+  target_node = element(var.target_nodes, count.index)
 
   ssh_keys = var.ssh_keys
 
-  storage_size = "200G"
+  storage_size = "100G"
 
   cores = var.cores
   sockets = var.sockets
 
   memory = var.memory
+
+  network_bridge = var.network_bridge
 }
 
 resource "random_pet" "cluster" {}

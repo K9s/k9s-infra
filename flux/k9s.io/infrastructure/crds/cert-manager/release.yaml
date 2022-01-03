@@ -14,7 +14,7 @@ spec:
   values:
     installCRDs: true
     ingressShim:
-      defaultIssuerName: letsencrypt-route53-staging
+      defaultIssuerName: letsencrypt-route53-production
       defaultIssuerKind: ClusterIssuer
       defaultIssuerGroup: cert-manager.io
   install:
