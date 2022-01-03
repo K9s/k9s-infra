@@ -69,7 +69,7 @@ spec:
       onlineMode: true
       maxThreads: 16
       cheats: true
-      serviceType: NodePort
+      serviceType: LoadBalancer
       # nodePort:
 
     extraEnv: { }

@@ -6,6 +6,4 @@ spec:
   values:
     minecraftServer:
       gameMode: survival
-      levelName: level
-      difficulty: normal
-      ops: "2535440440073157,2535468526729235"
+      levelName: level2
