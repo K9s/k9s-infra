@@ -41,3 +41,16 @@ spec:
                       env:
                         - name: KUBELET_ROOT_DIR
                           value: /var/snap/microk8s/common/var/lib/kubelet
+          - apiVersion: apps/v1
+            kind: DaemonSet
+            metadata:
+              name: longhorn-manager
+              namespace: longhorn-system
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: longhorn-manager
+                      env:
+                        - name: RANCHER_LOG_JSON
+                          value: "true"

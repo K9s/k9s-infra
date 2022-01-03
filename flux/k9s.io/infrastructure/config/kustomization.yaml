@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - longhorn-settings
+  - monitoring-config
+  - route53-credentials
+  - cluster-issuer-production
+  - cluster-issuer-staging

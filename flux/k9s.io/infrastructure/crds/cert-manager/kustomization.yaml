@@ -5,6 +5,3 @@ resources:
   - namespace.yaml
   - release.yaml
   - repository.yaml
-  - route53-credentials
-  - cluster-issuer-production
-  - cluster-issuer-staging

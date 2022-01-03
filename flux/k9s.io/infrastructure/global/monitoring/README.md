@@ -1,1 +1,0 @@
-Copied directly from https://github.com/fluxcd/flux2/tree/main/manifests/monitoring

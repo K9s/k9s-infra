@@ -18,7 +18,10 @@ spec:
   # Default values
   # https://github.com/bitnami/charts/blob/master/bitnami/nginx-ingress-controller/values.yaml
   values:
+    publishService:
+      enabled: true
     service:
       type: LoadBalancer
+#      externalTrafficPolicy: local
     ingressClassResource:
       default: true
