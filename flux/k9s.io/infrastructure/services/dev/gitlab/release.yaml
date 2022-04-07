@@ -1,0 +1,116 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: gitlab
+spec:
+  interval: 10s
+  chart:
+    spec:
+      version: 5.10.0
+      chart: gitlab
+      sourceRef:
+        kind: HelmRepository
+        name: gitlab
+      interval: 1m
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  timeout: 30m
+  values:
+    global:
+      edition: ce
+      hosts:
+        domain: gitlab.${environment}.${domain}
+        gitlab:
+          name: gitlab.${environment}.${domain}
+      ingress:
+        configureCertmanager: false
+        class: gitlab-nginx
+        annotations:
+          kubernetes.io/tls-acme: "true"
+      certificates:
+        customCAs:
+          - secret: letsencrypt-stg-root-x1
+          - secret: letsencrypt-stg-root-x2
+      appConfig:
+        terraformState:
+          enabled: true
+          bucket: gitlab-terraform-state
+        dependencyProxy:
+          enabled: true
+          proxy_download: true
+          bucket: gitlab-dependency-proxy
+
+    nginx-ingress:
+      ingressClassByName: true
+
+    certmanager:
+      install: false
+
+    gitlab:
+      webservice:
+        ingress:
+          tls:
+            secretName: gitlab-tls
+
+    registry:
+      ingress:
+        tls:
+          secretName: registry-tls
+
+    minio:
+      persistence:
+        size: 100Gi
+      ingress:
+        tls:
+          secretName: minio-tls
+
+    prometheus:
+      install: false
+
+    gitlab-runner:
+      install: true
+      rbac:
+        create: true
+      runners:
+        privileged: true
+        locked: false
+        config: |
+          concurrent = 200
+          log_format = "json"
+          check_interval = 1
+          [[runners]]
+            [runners.kubernetes]
+              image = "ubuntu:20.04"
+              helper_image_flavor = "ubuntu"
+
+              # build container
+              #cpu_limit = "2"
+              #memory_limit = "6Gi"
+
+              # service containers
+              #service_cpu_limit = "1"
+              #service_memory_limit = "1Gi"
+
+              # helper container
+              #helper_cpu_limit = "1"
+              #helper_memory_limit = "1Gi"
+            [[runners.kubernetes.volumes.empty_dir]]
+              name = "docker-certs"
+              mount_path = "/certs/client"
+              medium = "Memory"
+            {{- if .Values.global.minio.enabled }}
+            [runners.cache]
+              Type = "s3"
+              Path = "gitlab-runner"
+              Shared = true
+              [runners.cache.s3]
+                ServerAddress = {{ include "gitlab-runner.cache-tpl.s3ServerAddress" . }}
+                BucketName = "runner-cache"
+                BucketLocation = "us-east-1"
+                Insecure = false
+            {{ end }}
+      podAnnotations:
+        gitlab.com/prometheus_scrape: "true"
+        gitlab.com/prometheus_port: 9252

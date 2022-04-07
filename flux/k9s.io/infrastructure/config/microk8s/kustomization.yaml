@@ -1,0 +1,6 @@
+kind: Kustomization
+resources:
+  - ../common
+  - longhorn-settings
+  - coredns.yaml
+  - cluster-issuer-letsencrypt-route53-production

@@ -4,7 +4,7 @@ metadata:
   name: letsencrypt-route53
 spec:
   acme:
-    email: mattkenn4545@gmail.com
+    email: ${owner_email}
     preferredChain: "ISRG Root X1"
 
     solvers:
@@ -13,8 +13,8 @@ spec:
         dns01:
           route53:
             region: us-west-2
-            accessKeyID: null
-            hostedZoneID: null
+            accessKeyID: ${route53_accessKeyID}
+            hostedZoneID: ${route53_hostedZoneID}
             secretAccessKeySecretRef:
               name: route53-credentials
               key: AWS_SECRET_ACCESS_KEY

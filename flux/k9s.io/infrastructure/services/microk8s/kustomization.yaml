@@ -1,0 +1,7 @@
+kind: Kustomization
+resources:
+  - ../common
+  - ceph-csi-rbd
+  - longhorn
+patchesStrategicMerge:
+  - patch-kube-prometheus-stack.yaml

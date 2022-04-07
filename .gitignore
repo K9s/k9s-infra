@@ -5,3 +5,4 @@
 *.out
 .terragrunt-cache
 .terraform.lock.hcl
+.hash*

@@ -11,7 +11,7 @@ kind: Kustomization
 metadata:
   name: infrastructure-services
 spec:
-  path: ./flux/k9s.io/infrastructure/services
+  path: ./flux/k9s.io/infrastructure/services/microk8s
   dependsOn:
     - name: infrastructure-crds
 ---
@@ -20,6 +20,6 @@ kind: Kustomization
 metadata:
   name: infrastructure-config
 spec:
-  path: ./flux/k9s.io/infrastructure/config
+  path: ./flux/k9s.io/infrastructure/config/microk8s
   dependsOn:
     - name: infrastructure-services

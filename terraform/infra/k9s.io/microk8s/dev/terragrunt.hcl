@@ -23,13 +23,12 @@ inputs = {
 
   num_instances = 3
 
-  storage_target = "rbd-ssd"
+  storage_target = "ssd"
+  storage_size   = "128G"
 
   memory  = 32768
   cores   = 6
   sockets = 2
 
   use_pet_name = false
-
-#  network_bridge = "vmbr3"
 }

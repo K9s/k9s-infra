@@ -12,13 +12,13 @@ module "vms" {
   clone = var.clone
 
   vendor_storage_target = var.vendor_storage_target
-  storage_target        = var.storage_target
+
+  storage_target  = var.storage_target
+  storage_size    = var.storage_size
 
   target_node = element(var.target_nodes, count.index)
 
   ssh_keys = var.ssh_keys
-
-  storage_size = "100G"
 
   cores = var.cores
   sockets = var.sockets

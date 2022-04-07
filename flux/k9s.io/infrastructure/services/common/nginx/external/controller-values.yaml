@@ -1,0 +1,10 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: nginx-ingress-controller
+spec:
+  values:
+    ingressClassResource:
+      name: nginx-external
+      controllerClass: "k8s.io/ingress-nginx-external"
+    electionID: external-ingress-controller-leader

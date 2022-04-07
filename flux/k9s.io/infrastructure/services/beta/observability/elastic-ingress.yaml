@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: es-logs-ingress
+  annotations:
+    kubernetes.io/tls-acme: "true"
+#    nginx.ingress.kubernetes.io/auth-url: "https://auth.${environment}.${domain}/oauth2/auth"
+#    nginx.ingress.kubernetes.io/auth-signin: "https://auth.${environment}.${domain}/oauth2/start?rd=$escaped_request_uri"
+spec:
+  ingressClassName: nginx-internal
+  tls:
+    - hosts:
+        - logs.es.${environment}.${domain}
+      secretName: es-logs-tls
+  rules:
+    - host: logs.es.${environment}.${domain}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: logs-kb-http
+              servicePort: 5601
