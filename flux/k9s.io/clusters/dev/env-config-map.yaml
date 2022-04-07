@@ -7,3 +7,6 @@ data:
   domain: app.k9s.io
   environment: dev
   metallb_pool: "192.168.81.1-192.168.81.254"
+  route53_accessKeyID: "AKIA52RV2VYP7FXZET54"
+  route53_hostedZoneID: "Z029600614L3XCL6C0S5R"
+  owner_email: "mattkenn4545@gmail.com"

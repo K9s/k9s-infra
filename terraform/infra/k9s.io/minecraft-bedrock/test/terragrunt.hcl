@@ -22,7 +22,7 @@ inputs = {
   vendor_storage_target = dependency.cloudinit.outputs.storage_target
 
   memory = 2048
-  num_instances = 1
+  num_instances = 6
 
-  network_bridge = "vmbr2"
+  storage_target = "rbd"
 }

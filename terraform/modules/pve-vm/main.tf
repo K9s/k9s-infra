@@ -18,6 +18,8 @@ locals {
   }
 
   cicustom = var.vendor_storage_target == "" ? "" : "vendor=${var.vendor_storage_target}"
+
+  qm_id = element(split("/", proxmox_vm_qemu.this.id), 2)
 }
 
 resource "proxmox_vm_qemu" "this" {
@@ -80,20 +82,30 @@ resource "proxmox_vm_qemu" "this" {
     port        = self.ssh_port
   }
 
-
   provisioner "remote-exec" {
     inline = [
-      "until cloud-init status | grep done; do echo 'Waiting for cloudinit to complete' && sleep 5; done",
-      "sudo reboot &"
+      "until cloud-init status | grep done; do echo 'Waiting for cloudinit to complete' && sleep 5; done"
     ]
   }
+}
 
-  provisioner "local-exec" {
-    command = "echo 'Waiting 60s for node to reboot' && sleep 60"
+resource "null_resource" "qm_restart_vm" {
+  depends_on = [proxmox_vm_qemu.this]
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    host        = "${var.target_node}.${var.domain_name}"
+    port        = 22
   }
 
   provisioner "remote-exec" {
     inline = [
+      "echo 'Shutdown QM Node ${local.qm_id}' && qm shutdown ${local.qm_id} --forceStop 1 --timeout 120",
+      "sleep 5",
+      "echo 'Starting QM Node ${local.qm_id}' && qm start ${local.qm_id} --timeout 120",
+      "sleep 5",
+      "until qm guest cmd ${local.qm_id} get-host-name; do echo 'Waiting for QEMU guest agent to start' && sleep 5; done",
       "echo 'Node Ready'"
     ]
   }

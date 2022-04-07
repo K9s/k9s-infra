@@ -22,8 +22,26 @@ variable "vendor_storage_target" {
   default = ""
 }
 
-variable "target_node" {
+variable "storage_target" {
   type = string
+
+  default = "local-lvm"
+}
+
+variable "target_nodes" {
+  type = list(string)
+}
+
+variable "storage_size" {
+  type = string
+
+  default = "32G"
+}
+
+variable "skip_provisioning" {
+  type = bool
+
+  default = false
 }
 
 variable "ssh_keys" {

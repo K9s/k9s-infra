@@ -13,7 +13,10 @@ module "vms" {
 
   vendor_storage_target = var.vendor_storage_target
 
-  target_node = var.target_node
+  storage_target  = var.storage_target
+  storage_size    = var.storage_size
+
+  target_node = element(var.target_nodes, count.index + random_integer.target_offset.result)
 
   ssh_keys = var.ssh_keys
 
@@ -26,3 +29,8 @@ module "vms" {
 }
 
 resource "random_pet" "cluster" {}
+
+resource "random_integer" "target_offset" {
+  min = 0
+  max = length(var.target_nodes)
+}

@@ -27,19 +27,9 @@ inputs = {
 
   servers = [
     {
-      "name" : "KennedyCraft - XMAS",
+      "name" : "KennedyCraft",
       "iconUrl" : "https://i.imgur.com/3BmFZRE.png",
-      "address" : "192.168.80.3",
-      "port" : 19132
-    },{
-      "name" : "KennedyCraft - GH",
-      "iconUrl" : "https://i.imgur.com/3BmFZRE.png",
-      "address" : "192.168.80.2",
-      "port" : 19132
-    },{
-      "name" : "KennedyCraft - NewYear",
-      "iconUrl" : "https://i.imgur.com/3BmFZRE.png",
-      "address" : "192.168.80.4",
+      "address" : "192.168.81.3",
       "port" : 19132
     }
   ]
