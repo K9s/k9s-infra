@@ -4,6 +4,7 @@ resources:
   - external-dns-route53
   - kube-prometheus-stack
   - metallb
+  - metrics-server
   - nginx
   - nginx/internal
   - nginx/external

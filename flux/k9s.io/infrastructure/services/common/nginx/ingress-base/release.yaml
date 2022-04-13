@@ -23,7 +23,7 @@ spec:
     service:
       type: LoadBalancer
     ingressClassResource:
-      default: true
+      default: false
     config:
       log-format-escape-json: "true"
       log-format-upstream: '{"timestamp": "$time_iso8601", "requestID": "$req_id", "proxyUpstreamName":

@@ -52,11 +52,13 @@ fi
 docker run --name minio -d --restart=always --net=kind --mount type=bind,source=$(realpath ../../../../),target=/data -p 9000:9000 -p 9001:9001 minio/minio server /data --console-address ":9001" || true
 
 ## Local registry and pull-through proxy
-docker run -d --restart=always --net=kind -p "127.0.0.1:5000:5000" --name "registry" registry:2 || true
-docker run -d --restart=always --net=kind -p "127.0.0.1:5001:5000" --name "proxy-docker-io" -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io registry:2 || true
-docker run -d --restart=always --net=kind -p "127.0.0.1:5002:5000" --name "proxy-k8s-gcr-io" -e REGISTRY_PROXY_REMOTEURL=https://k8s.gcr.io registry:2 || true
-docker run -d --restart=always --net=kind -p "127.0.0.1:5003:5000" --name "proxy-quay-io" -e REGISTRY_PROXY_REMOTEURL=https://quay.io registry:2 || true
-docker run -d --restart=always --net=kind -p "127.0.0.1:5004:5000" --name "proxy-gcr-io" -e REGISTRY_PROXY_REMOTEURL=https://gcr.io registry:2 || true
+echo "<------Starting local registry and registry proxies"
+docker run -d --restart=always --net=kind -p "127.0.0.1:5000:5000" --name "registry" registry:2  > /dev/null 2>&1 || true
+docker run -d --restart=always --net=kind -p "127.0.0.1:5001:5000" --name "proxy-docker-io" -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io registry:2  > /dev/null 2>&1 || true
+docker run -d --restart=always --net=kind -p "127.0.0.1:5002:5000" --name "proxy-k8s-gcr-io" -e REGISTRY_PROXY_REMOTEURL=https://k8s.gcr.io registry:2  > /dev/null 2>&1 || true
+docker run -d --restart=always --net=kind -p "127.0.0.1:5003:5000" --name "proxy-quay-io" -e REGISTRY_PROXY_REMOTEURL=https://quay.io registry:2  > /dev/null 2>&1 || true
+docker run -d --restart=always --net=kind -p "127.0.0.1:5004:5000" --name "proxy-gcr-io" -e REGISTRY_PROXY_REMOTEURL=https://gcr.io registry:2  > /dev/null 2>&1 || true
+docker run -d --restart=always --net=kind -p "127.0.0.1:5005:5000" --name "proxy-gitlab-com" -e REGISTRY_PROXY_REMOTEURL=https://registry.gitlab.com registry:2  > /dev/null 2>&1 || true
 
 # Document the local registry
 # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
@@ -79,4 +81,13 @@ sleep 5
 
 kubectl apply -f ../../../../../state/sealed-master.yaml
 
-echo "Bootstrap complete"
+echo "<------Waiting for Flux Kustomization infrastructure-services to be created------>"
+while ! kubectl get -n flux-system kustomizations infrastructure-services; do sleep 5; done
+echo "<------Waiting for Flux Kustomization infrastructure-services to be ready------>"
+kubectl wait -n flux-system --for=condition=ready --timeout=240s Kustomization infrastructure-services
+echo "<------Waiting for all helmreleases to be ready------>"
+while kubectl get --no-headers -A helmreleases | grep -v True; do sleep 5; done
+echo "<------helmreleases ready------>"
+kubectl get --no-headers -A helmreleases
+
+echo "<######## Bootstrap complete ########>"

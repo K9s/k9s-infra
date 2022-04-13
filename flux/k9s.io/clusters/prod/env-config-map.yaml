@@ -10,3 +10,4 @@ data:
   route53_accessKeyID: "AKIA52RV2VYP7FXZET54"
   route53_hostedZoneID: "Z029600614L3XCL6C0S5R"
   owner_email: "mattkenn4545@gmail.com"
+  defaultIssuerName: "letsencrypt-route53-production"
