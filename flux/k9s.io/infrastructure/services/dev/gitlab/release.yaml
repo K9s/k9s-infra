@@ -32,6 +32,14 @@ spec:
         customCAs:
           - secret: letsencrypt-stg-root-x1
           - secret: letsencrypt-stg-root-x2
+      appConfig:
+        terraformState:
+          enabled: true
+          bucket: gitlab-terraform-state
+        dependencyProxy:
+          enabled: true
+          proxy_download: true
+          bucket: gitlab-dependency-proxy
 
     nginx-ingress:
       ingressClassByName: true
