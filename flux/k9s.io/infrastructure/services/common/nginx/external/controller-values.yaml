@@ -6,6 +6,7 @@ spec:
   values:
     ingressClassResource:
       name: nginx-external
+      controllerClass: "k8s.io/ingress-nginx-external"
     service:
       type: LoadBalancer
     electionID: external-ingress-controller-leader
