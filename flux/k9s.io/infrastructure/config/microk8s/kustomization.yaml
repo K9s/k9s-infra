@@ -2,3 +2,4 @@ kind: Kustomization
 resources:
   - ../common
   - longhorn-settings
+  - coredns.yaml
