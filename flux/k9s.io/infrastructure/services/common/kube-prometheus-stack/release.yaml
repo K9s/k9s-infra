@@ -23,7 +23,7 @@ spec:
       defaultDashboardsTimezone: browser
       ingress:
         enabled: true
-        ingressClassName: nginx
+        ingressClassName: nginx-internal
         annotations:
           kubernetes.io/tls-acme: "true"
         hosts:
