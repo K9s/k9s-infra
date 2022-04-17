@@ -6,4 +6,5 @@ spec:
   values:
     ingressClassResource:
       name: nginx-external
+      controllerClass: "k8s.io/ingress-nginx-external"
     electionID: external-ingress-controller-leader
