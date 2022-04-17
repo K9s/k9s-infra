@@ -6,6 +6,6 @@ spec:
   values:
     ingressClassResource:
       default: true
-      name: nginx
-      controllerClass: "k8s.io/ingress-nginx"
+      name: nginx-internal
+      controllerClass: "k8s.io/ingress-nginx-internal"
     electionID: internal-ingress-controller-leader
