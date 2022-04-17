@@ -19,7 +19,7 @@ spec:
       tls: true
       enabled: true
       host: longhorn.${environment}.${domain}
-      ingressClassName: nginx
+      ingressClassName: nginx-internal
       annotations:
         kubernetes.io/tls-acme: "true"
 #        nginx.ingress.kubernetes.io/auth-type: basic
