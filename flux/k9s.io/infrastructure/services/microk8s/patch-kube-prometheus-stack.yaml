@@ -3,19 +3,6 @@ kind: HelmRelease
 metadata:
   name: prometheus
 spec:
-  interval: 10m
-  chart:
-    spec:
-      version: 34.9.0
-      chart: kube-prometheus-stack
-      sourceRef:
-        kind: HelmRepository
-        name: prometheus-community
-      interval: 1m
-  install:
-    crds: Create
-  upgrade:
-    crds: CreateReplace
   values:
     prometheus:
       prometheusSpec:
