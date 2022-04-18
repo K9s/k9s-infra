@@ -14,9 +14,9 @@ spec:
       interval: 1m
   install:
     crds: CreateReplace
-    disableWaitForJobs:  true
   upgrade:
     crds: CreateReplace
+    disableWaitForJobs:  true
   values:
     global:
       edition: ce
