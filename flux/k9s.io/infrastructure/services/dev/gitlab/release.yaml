@@ -17,6 +17,7 @@ spec:
   upgrade:
     crds: CreateReplace
     force: true
+  timeout: 15m
   values:
     global:
       edition: ce
