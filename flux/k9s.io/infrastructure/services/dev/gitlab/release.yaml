@@ -16,7 +16,6 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-    disableWait: true
   values:
     global:
       edition: ce
