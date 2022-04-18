@@ -16,7 +16,7 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-    disableWaitForJobs:  true
+    disableWait: true
   values:
     global:
       edition: ce
