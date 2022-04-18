@@ -16,6 +16,7 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+    force: true
   values:
     global:
       edition: ce
