@@ -3,3 +3,9 @@ kind: Kustomization
 namespace: kube-system
 resources:
   - https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability.yaml
+patches:
+  - path: patch-insecure-kubelet-tls.yaml
+    target:
+      kind: Deployment
+      name: metrics-server
+      namespace: kube-system
