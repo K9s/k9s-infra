@@ -16,7 +16,6 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-    force: true
   timeout: 30m
   values:
     global:
