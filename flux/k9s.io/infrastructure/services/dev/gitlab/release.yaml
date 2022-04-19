@@ -79,6 +79,7 @@ spec:
           [[runners]]
             [runners.kubernetes]
             image = "ubuntu:20.04"
+            helper_image_flavor = "ubuntu"
             {{- if .Values.global.minio.enabled }}
             [runners.cache]
               Type = "s3"
