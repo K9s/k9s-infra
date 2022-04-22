@@ -60,6 +60,8 @@ spec:
           secretName: registry-tls
 
     minio:
+      persistence:
+        size: 50Gi
       ingress:
         tls:
           secretName: minio-tls
@@ -94,7 +96,6 @@ spec:
               # helper container
               helper_cpu_limit = "1"
               helper_memory_limit = "1Gi"
-          
             [[runners.kubernetes.volumes.empty_dir]]
               name = "docker-certs"
               mount_path = "/certs/client"
