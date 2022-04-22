@@ -75,10 +75,26 @@ spec:
         privileged: true
         locked: false
         config: |
+          concurrent = 200
+          log_format = "json"
+          check_interval = 1
           [[runners]]
             [runners.kubernetes]
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
+
+              # build container
+              cpu_limit = "2"
+              memory_limit = "6Gi"
+
+              # service containers
+              service_cpu_limit = "1"
+              service_memory_limit = "1Gi"
+
+              # helper container
+              helper_cpu_limit = "1"
+              helper_memory_limit = "1Gi"
+          
             [[runners.kubernetes.volumes.empty_dir]]
               name = "docker-certs"
               mount_path = "/certs/client"
