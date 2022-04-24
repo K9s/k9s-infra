@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 data:
   domain: app.k9s.io
-  environment: fluxlohy
+  environment: flux-local
   metallb_pool: "172.18.255.1-172.18.255.250"
   route53_accessKeyID: "AKIA52RV2VYP7FXZET54"
   route53_hostedZoneID: "Z029600614L3XCL6C0S5R"

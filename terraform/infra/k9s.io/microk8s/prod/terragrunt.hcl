@@ -23,7 +23,7 @@ inputs = {
 
   num_instances = 3
 
-  storage_target = "rbd-ssd"
+  storage_target = "ssd"
 
   memory  = 32768
   cores   = 6
