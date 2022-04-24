@@ -6,7 +6,7 @@ spec:
   interval: 10s
   chart:
     spec:
-      version: 5.9.3
+      version: 5.10.0
       chart: gitlab
       sourceRef:
         kind: HelmRepository
@@ -87,15 +87,15 @@ spec:
 
               # build container
               #cpu_limit = "2"
-              memory_limit = "6Gi"
+              #memory_limit = "6Gi"
 
               # service containers
               #service_cpu_limit = "1"
-              service_memory_limit = "1Gi"
+              #service_memory_limit = "1Gi"
 
               # helper container
               #helper_cpu_limit = "1"
-              helper_memory_limit = "1Gi"
+              #helper_memory_limit = "1Gi"
             [[runners.kubernetes.volumes.empty_dir]]
               name = "docker-certs"
               mount_path = "/certs/client"
