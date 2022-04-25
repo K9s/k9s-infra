@@ -61,7 +61,7 @@ spec:
 
     minio:
       persistence:
-        size: 50Gi
+        size: 100Gi
       ingress:
         tls:
           secretName: minio-tls
