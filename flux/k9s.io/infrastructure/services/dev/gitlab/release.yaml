@@ -74,15 +74,15 @@ spec:
       rbac:
         create: true
       concurrent: 50
-      checkInterval: 3
+      checkInterval: 1
       logFormat: json
       runners:
         privileged: true
         locked: false
         config: |
           [[runners]]
-            request_concurrency = 5
             [runners.kubernetes]
+              request_concurrency = 5
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
 
