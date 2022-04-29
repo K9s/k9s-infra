@@ -81,6 +81,7 @@ spec:
         locked: false
         config: |
           [[runners]]
+            request_concurrency = 5
             [runners.kubernetes]
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
