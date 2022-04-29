@@ -81,6 +81,7 @@ spec:
           log_format = "json"
           check_interval = 1
           [[runners]]
+            request_concurrency = 20
             [runners.kubernetes]
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
