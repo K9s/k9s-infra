@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eE
 
 docker build --build-arg BASE_IMAGE=kindest/node:v1.23.4@sha256:0e34f0d0fd448aa2f2819cfd74e99fe5793a6e4938b328f657c8e3f81ee0dfb9 . -t kindest/node:v1.23.4
 
@@ -15,12 +15,18 @@ else
   CLUSTER_NAME=$CLUSTER_NAME
 fi
 
+if hash kubectl; then
+  echo "kubectl is already present @ $(which kubectl)"
+else
+  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+fi
+
 if hash kustomize; then
   echo "kustomize is already present @ $(which kustomize)"
 else
   curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-  mv kustomize /usr/local/bin
-  sudo chmod +x /usr/local/bin/kustomize
+  sudo install -o root -g root -m 0755 kustomize /usr/local/bin/kustomize
 fi
 
 if hash kind; then
@@ -49,7 +55,7 @@ else
 fi
 
 ## Minio
-docker run --name minio -d --restart=always --net=kind --mount type=bind,source=$(realpath ../../../../),target=/data -p 9000:9000 -p 9001:9001 minio/minio server /data --console-address ":9001" || true
+docker run --name minio -d --restart=always --net=kind --mount type=bind,source=$(realpath ../../../../),target=/data -p 9000:9000 -p 9001:9001 --user $(id -u):$(id -g) quay.io/minio/minio:RELEASE.2022-05-26T05-48-41Z server /data --console-address ":9001" || true
 
 ## Local registry and pull-through proxy
 echo "<------Starting local registry and registry proxies"
@@ -86,7 +92,7 @@ while ! kubectl get -n flux-system kustomizations infrastructure-services; do sl
 echo "<------Waiting for Flux Kustomization infrastructure-services to be ready------>"
 kubectl wait -n flux-system --for=condition=ready --timeout=240s Kustomization infrastructure-services
 echo "<------Waiting for all helmreleases to be ready------>"
-while kubectl get --no-headers -A helmreleases | grep -v True; do sleep 5; done
+while kubectl get --no-headers -A helmreleases | grep -v True; do sleep 5 && echo --------------------------------; done
 echo "<------helmreleases ready------>"
 kubectl get --no-headers -A helmreleases
 
