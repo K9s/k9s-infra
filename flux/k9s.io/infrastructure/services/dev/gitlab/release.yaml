@@ -81,6 +81,8 @@ spec:
         locked: false
         config: |
           [[runners]]
+            pre_clone_script = 'cat /etc/resolv.conf | sed -r "s/^(options.*)/#\1/" > /tmp/resolv && cat /tmp/resolv > /etc/resolv.conf'
+
             [runners.kubernetes]
               request_concurrency = 5
               image = "ubuntu:20.04"
