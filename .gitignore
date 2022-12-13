@@ -1,4 +1,5 @@
 .idea
+.minio.sys/*
 .terraform
 *.tfstate
 *.tfstate.backup
