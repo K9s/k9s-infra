@@ -7,6 +7,6 @@ resources:
   - metrics-server
   - nginx
   - nginx/internal
-#  - nginx/external
+  - nginx/external
   - sources
 #  - coredns.yaml
