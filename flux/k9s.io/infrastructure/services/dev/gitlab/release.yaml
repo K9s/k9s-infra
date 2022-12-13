@@ -87,15 +87,15 @@ spec:
               helper_image_flavor = "ubuntu"
 
               # build container
-              cpu_request = "2"
-              cpu_limit = "2"
-              memory_request = "6Gi"
+              cpu_request = "1"
+              cpu_limit = "4"
+              memory_request = "1Gi"
               memory_limit = "6Gi"
 
               # service containers
-              service_cpu_request = "2"
-              service_cpu_limit = "2"
-              service_memory_request = "6Gi"
+              service_cpu_request = "1"
+              service_cpu_limit = "8"
+              service_memory_request = "1Gi"
               service_memory_limit = "6Gi"
 
               # helper container
