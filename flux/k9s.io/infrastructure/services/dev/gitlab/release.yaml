@@ -6,7 +6,7 @@ spec:
   interval: 10s
   chart:
     spec:
-      version: 5.10.5
+      version: 6.6.2
       chart: gitlab
       sourceRef:
         kind: HelmRepository
