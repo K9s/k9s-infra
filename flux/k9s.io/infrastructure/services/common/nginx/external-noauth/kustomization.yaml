@@ -1,11 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: nginx
-nameSuffix: -external
+nameSuffix: -external-noauth
 resources:
   - ../ingress-base
-  - github-secret.yaml
-  - oauth-ingress.yaml
-  - oauth2-proxy.yaml
 patchesStrategicMerge:
   - controller-values.yaml

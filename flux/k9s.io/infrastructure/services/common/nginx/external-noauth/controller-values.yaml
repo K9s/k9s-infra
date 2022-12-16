@@ -6,6 +6,6 @@ spec:
   values:
     ingressClassResource:
       default: false
-      name: nginx-external
-      controllerClass: "k8s.io/ingress-nginx-external"
-    electionID: external-ingress-controller-leader
+      name: nginx-external-noauth
+      controllerClass: "k8s.io/ingress-external-noauth"
+    electionID: external-noauth-ingress-controller-leader

@@ -8,5 +8,6 @@ resources:
   - nginx
   - nginx/internal
   - nginx/external
+  - nginx/external-noauth
   - sources
 #  - coredns.yaml
