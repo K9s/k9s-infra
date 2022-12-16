@@ -54,11 +54,6 @@ spec:
           tls:
             secretName: gitlab-tls
 
-    kas:
-      ingress:
-        tls:
-          secretName: kas-tls
-
     registry:
       ingress:
         tls:
