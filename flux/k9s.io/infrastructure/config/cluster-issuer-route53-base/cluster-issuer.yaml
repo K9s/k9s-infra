@@ -18,3 +18,8 @@ spec:
             secretAccessKeySecretRef:
               name: route53-credentials
               key: AWS_SECRET_ACCESS_KEY
+      - selector:
+          dnsZones: [ "${environment}.${domain}" ]
+        http01:
+          ingress:
+            class: nginx-external-noauth
