@@ -7,5 +7,5 @@ variable "servers" {
 variable "connect_version" {
   type = string
 
-  default = "1.16"
+  default = "1.26"
 }

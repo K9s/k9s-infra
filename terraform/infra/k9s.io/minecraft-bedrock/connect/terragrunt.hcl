@@ -27,7 +27,7 @@ inputs = {
 
   servers = [
     {
-      "name" : "KennedyCraft",
+      "name" : "KennedyCraft-XMAS",
       "iconUrl" : "https://i.imgur.com/3BmFZRE.png",
       "address" : "192.168.81.3",
       "port" : 19132
