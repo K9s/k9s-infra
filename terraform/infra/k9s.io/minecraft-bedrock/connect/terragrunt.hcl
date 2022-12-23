@@ -8,7 +8,7 @@ terraform {
 }
 
 dependency "cloudimg" {
-  config_path = "../../pve/cloudimg-template/ubuntu-lts"
+  config_path = "../../pve/cloudimg-template/ubuntu-jammy"
 }
 
 dependency "cloudinit" {
