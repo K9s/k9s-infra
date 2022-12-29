@@ -6,7 +6,7 @@ spec:
   interval: 10s
   chart:
     spec:
-      version: 6.6.2
+      version: 6.7.0
       chart: gitlab
       sourceRef:
         kind: HelmRepository
@@ -70,10 +70,6 @@ spec:
       install: false
 
     gitlab-runner:
-      image:
-        registry: registry.gitlab.com
-        image: gitlab-org/gitlab-runner
-        tag: alpine-v15.6.1
       install: true
       rbac:
         create: true
