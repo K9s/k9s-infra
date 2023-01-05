@@ -8,7 +8,7 @@ terraform {
 }
 
 dependency "cloudimg" {
-  config_path = "../../pve/cloudimg-template/ubuntu-lts"
+  config_path = "../../pve/cloudimg-template/ubuntu-jammy"
 }
 
 dependency "cloudinit" {
@@ -24,6 +24,7 @@ inputs = {
   num_instances = 3
 
   storage_target = "ssd"
+  storage_size   = "200G"
 
   memory  = 32768
   cores   = 6
@@ -31,5 +32,5 @@ inputs = {
 
   use_pet_name = false
 
-#  network_bridge = "vmbr2"
+  network_bridge = "vmbr2"
 }
