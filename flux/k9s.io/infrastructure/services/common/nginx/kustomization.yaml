@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: nginx
 resources:
   - namespace.yaml
+  - k9s-external.yml

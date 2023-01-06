@@ -9,3 +9,5 @@ spec:
       name: nginx-external-noauth
       controllerClass: "k8s.io/ingress-external-noauth"
     electionID: external-noauth-ingress-controller-leader
+    publishService:
+      pathOverride: "{{.Release.namespace}}/k9s-external"
