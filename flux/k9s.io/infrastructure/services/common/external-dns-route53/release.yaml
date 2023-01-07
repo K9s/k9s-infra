@@ -19,6 +19,7 @@ spec:
   # https://artifacthub.io/packages/helm/bitnami/external-dns?modal=values
   values:
 #    dryRun: true
+    txtPrefix: edns
     aws:
       credentials:
         secretName: route53-credentials
