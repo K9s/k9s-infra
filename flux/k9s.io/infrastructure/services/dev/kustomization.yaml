@@ -1,4 +1,4 @@
 kind: Kustomization
 resources:
   - ../microk8s
-  - gitlab
+#  - gitlab
