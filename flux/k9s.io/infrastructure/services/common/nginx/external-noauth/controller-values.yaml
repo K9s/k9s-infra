@@ -11,3 +11,5 @@ spec:
     electionID: external-noauth-ingress-controller-leader
     publishService:
       pathOverride: "nginx/k9s-external"
+    tcp:
+      "22": "gitlab/gitlab-gitlab-shell:22"
