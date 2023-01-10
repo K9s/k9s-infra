@@ -29,10 +29,6 @@ spec:
         class: gitlab-nginx
         annotations:
           kubernetes.io/tls-acme: "true"
-      certificates:
-        customCAs:
-          - secret: letsencrypt-stg-root-x1
-          - secret: letsencrypt-stg-root-x2
       appConfig:
         terraformState:
           enabled: true
@@ -42,6 +38,7 @@ spec:
           enabled: true
       pages:
         enabled: true
+
     nginx-ingress:
       ingressClassByName: true
 
@@ -55,6 +52,10 @@ spec:
             secretName: gitlab-tls
       sidekiq:
         minReplicas: 5
+      kas:
+        ingress:
+          tls:
+            secretName: kas-tls
       gitlab-pages:
         ingress:
           tls:

@@ -5,5 +5,3 @@ resources:
   - namespace.yaml
   - release.yaml
   - repository.yaml
-  - letsencrypt-stg-root-x1.yaml
-  - letsencrypt-stg-root-x2.yaml
