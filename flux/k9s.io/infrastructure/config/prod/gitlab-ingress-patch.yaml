@@ -3,6 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gitlab-webservice-default
+  namespace: gitlab
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
     kustomize.toolkit.fluxcd.io/ssa: merge
@@ -13,6 +14,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gitlab-gitlab-pages
+  namespace: gitlab
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
     kustomize.toolkit.fluxcd.io/ssa: merge
@@ -23,6 +25,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gitlab-registry
+  namespace: gitlab
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
     kustomize.toolkit.fluxcd.io/ssa: merge
