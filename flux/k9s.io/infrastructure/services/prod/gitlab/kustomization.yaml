@@ -4,6 +4,7 @@ namespace: gitlab
 resources:
   - namespace.yaml
   - release.yaml
+  - ingress-patch.yaml
   - repository.yaml
   - letsencrypt-stg-root-x1.yaml
   - letsencrypt-stg-root-x2.yaml
