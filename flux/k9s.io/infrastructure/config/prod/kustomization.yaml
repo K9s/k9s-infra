@@ -1,0 +1,4 @@
+kind: Kustomization
+resources:
+  - ../microk8s
+  - gitlab-ingress-patch.yaml
