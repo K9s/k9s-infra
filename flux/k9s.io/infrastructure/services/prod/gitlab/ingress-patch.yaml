@@ -18,3 +18,13 @@ metadata:
     kustomize.toolkit.fluxcd.io/ssa: merge
 spec:
   ingressClassName: nginx-external-noauth
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gitlab-registry
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    kustomize.toolkit.fluxcd.io/ssa: merge
+spec:
+  ingressClassName: nginx-external-noauth
