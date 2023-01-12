@@ -16,10 +16,10 @@ containerdConfigPatches:
       endpoint = ["http://proxy-gitlab-com:5000"]
 nodes:
 - role: control-plane
-  image: kindest/node:v1.23.4
+  image: kindest/node:current
 - role: worker
-  image: kindest/node:v1.23.4
+  image: kindest/node:current
 - role: worker
-  image: kindest/node:v1.23.4
+  image: kindest/node:current
 - role: worker
-  image: kindest/node:v1.23.4
+  image: kindest/node:current

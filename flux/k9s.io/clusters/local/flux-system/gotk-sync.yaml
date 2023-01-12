@@ -11,7 +11,7 @@ spec:
   insecure: true
   secretRef:
     name: minio-bucket-secret
-  bucketName: flux
+  bucketName: k9s-infra
 ---
 apiVersion: v1
 kind: Secret
@@ -30,7 +30,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m0s
-  path: ./k9s.io/clusters/local
+  path: ./flux/k9s.io/clusters/local
   prune: true
   sourceRef:
     kind: Bucket

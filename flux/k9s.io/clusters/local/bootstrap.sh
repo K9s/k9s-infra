@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -eE
 
-docker build --build-arg BASE_IMAGE=kindest/node:v1.23.4@sha256:0e34f0d0fd448aa2f2819cfd74e99fe5793a6e4938b328f657c8e3f81ee0dfb9 . -t kindest/node:v1.23.4
+KIND_VERSION=${KIND_VERSION:-"0.17.0"}
+KIND_K8S_VERSION=${KIND_K8S_VERSION:-"1.24.7"}
+KIND_IMAGE_DIGEST=${KIND_IMAGE_DIGEST:-"577c630ce8e509131eab1aea12c022190978dd2f745aac5eb1fe65c0807eb315"}
+
+docker build --build-arg BASE_IMAGE=kindest/node:v${KIND_VERSION}@sha256:${KIND_IMAGE_DIGEST} . -t kindest/node:current
 
 if [[ -z "${DELETE_CLUSTER}" ]]; then
   DELETE_CLUSTER=false
@@ -29,10 +33,10 @@ else
   sudo install -o root -g root -m 0755 kustomize /usr/local/bin/kustomize
 fi
 
-if hash kind; then
-  echo "kind is already present @ $(which kind)"
+if kind --version | grep "${KIND_VERSION}"; then
+  echo "kind v${KIND_VERSION} is already present @ $(which kind)"
 else
-  sudo curl -Lo /usr/local/bin/kind -z /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.12.0/kind-linux-amd64
+  sudo curl -Lo /usr/local/bin/kind -z /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
   sudo chmod +x /usr/local/bin/kind
 fi
 
@@ -55,7 +59,7 @@ else
 fi
 
 ## Minio
-docker run --name minio -d --restart=always --net=kind --mount type=bind,source=$(realpath ../../../../),target=/data -p 9000:9000 -p 9001:9001 --user $(id -u):$(id -g) quay.io/minio/minio:RELEASE.2022-05-26T05-48-41Z server /data --console-address ":9001" || true
+docker run --name minio -d --restart=always --net=kind --mount type=bind,source=$(realpath ../../../../../),target=/data -p 9000:9000 -p 9001:9001 --user $(id -u):$(id -g) quay.io/minio/minio:RELEASE.2022-05-26T05-48-41Z server /data --console-address ":9001" || true
 
 ## Local registry and pull-through proxy
 echo "<------Starting local registry and registry proxies"
