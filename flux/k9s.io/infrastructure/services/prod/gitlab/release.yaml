@@ -51,7 +51,11 @@ spec:
           tls:
             secretName: gitlab-tls
       sidekiq:
-        minReplicas: 5
+        hpa:
+          cpu:
+            targetAverageValue: 2
+        concurrency: 100
+        minReplicas: 2
       kas:
         ingress:
           tls:
@@ -90,7 +94,10 @@ spec:
         locked: false
         config: |
           [[runners]]
-            pre_clone_script = 'cat /etc/resolv.conf | sed -r "s/^(options.*)/#\1/" > /tmp/resolv && cat /tmp/resolv > /etc/resolv.conf'
+            pre_clone_script = '''
+              ##### Runner pre_clone_script #####
+              cat /etc/resolv.conf | sed -r "s/^(options.*)/#\1/" > /tmp/resolv && cat /tmp/resolv > /etc/resolv.conf
+            '''
 
             [runners.kubernetes]
               request_concurrency = 5
