@@ -30,6 +30,8 @@ spec:
         annotations:
           kubernetes.io/tls-acme: "true"
       appConfig:
+        object_store:
+          proxy_download: false
         terraformState:
           enabled: true
         ciSecureFiles:
