@@ -6,7 +6,7 @@ spec:
   interval: 10s
   chart:
     spec:
-      version: 6.7.2
+      version: 6.7.3
       chart: gitlab
       sourceRef:
         kind: HelmRepository
@@ -50,6 +50,7 @@ spec:
         ingress:
           tls:
             secretName: gitlab-tls
+        minReplicas: 5
       sidekiq:
         hpa:
           cpu:
@@ -67,7 +68,7 @@ spec:
 
     registry:
       hpa:
-        minReplicas: 5
+        minReplicas: 2
       ingress:
         tls:
           secretName: registry-tls
