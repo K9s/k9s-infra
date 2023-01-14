@@ -29,17 +29,25 @@ spec:
         class: gitlab-nginx
         annotations:
           kubernetes.io/tls-acme: "true"
+      pages:
+        enabled: true
       appConfig:
-        object_store:
-          proxy_download: false
+        lfs:
+          enabled: true
+        artifacts:
+          enabled: true
+        uploads:
+          enabled: true
+        packages:
+          enabled: true
+        externalDiffs:
+          enabled: true
         terraformState:
           enabled: true
         ciSecureFiles:
           enabled: true
         dependencyProxy:
           enabled: true
-      pages:
-        enabled: true
 
     nginx-ingress:
       ingressClassByName: true
@@ -52,13 +60,13 @@ spec:
         ingress:
           tls:
             secretName: gitlab-tls
-        minReplicas: 5
+        minReplicas: 2
       sidekiq:
         hpa:
           cpu:
             targetAverageValue: 2
-        concurrency: 100
-        minReplicas: 2
+        concurrency: 10
+        minReplicas: 5
       kas:
         ingress:
           tls:
