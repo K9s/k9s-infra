@@ -62,11 +62,7 @@ spec:
             secretName: gitlab-tls
         minReplicas: 2
       sidekiq:
-        hpa:
-          cpu:
-            targetAverageValue: 2
-        concurrency: 10
-        minReplicas: 5
+        minReplicas: 2
       kas:
         ingress:
           tls:
