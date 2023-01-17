@@ -92,6 +92,7 @@ spec:
     gitlab-runner:
       install: true
       rbac:
+        clusterWideAccess: true
         create: true
       concurrent: 50
       checkInterval: 1
@@ -111,6 +112,7 @@ spec:
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
               namespace = "ci-builds"
+              namespace_overwrite_allowed = "ci-.*"
 
               # build container
               cpu_request = "250m"
