@@ -4,8 +4,8 @@ metadata:
   name: env-config-map
   namespace: flux-system
 data:
-  domain: app.k9s.io
-  environment: prod
+  domain: k9s.io
+  environment: app
   metallb_pool: "10.100.81.1-10.100.81.254"
   route53_accessKeyID: "AKIA52RV2VYP7FXZET54"
   route53_hostedZoneID: "Z029600614L3XCL6C0S5R"
