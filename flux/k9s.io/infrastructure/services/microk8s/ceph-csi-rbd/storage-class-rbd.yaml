@@ -13,7 +13,7 @@ parameters:
   csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret
   csi.storage.k8s.io/provisioner-secret-namespace: rbd-csi
   imageFeatures: layering
-  pool: ${environment}-mk8s-rbd
+  pool: ${internal_environment:-"${environment}"}-mk8s-rbd
   thickProvision: "false"
 reclaimPolicy: Delete
 allowVolumeExpansion: true
