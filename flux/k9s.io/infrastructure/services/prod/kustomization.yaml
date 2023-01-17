@@ -2,3 +2,4 @@ kind: Kustomization
 resources:
   - ../microk8s
   - gitlab
+  - ci-builds-namespace.yaml

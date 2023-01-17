@@ -110,6 +110,7 @@ spec:
               request_concurrency = 5
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
+              namespace = "ci-builds"
 
               # build container
               cpu_request = "250m"
