@@ -81,6 +81,7 @@ spec:
 
     minio:
       persistence:
+        storageClass: rbd
         size: 100Gi
       ingress:
         tls:
