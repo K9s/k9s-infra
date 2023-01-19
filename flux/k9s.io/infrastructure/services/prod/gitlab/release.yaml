@@ -132,9 +132,10 @@ spec:
               helper_cpu_limit = "250m"
               helper_memory_request = "500m"
               helper_memory_limit = "1Gi"
-            [[runners.kubernetes.volumes.pvc]]
+            [[runners.kubernetes.volumes.empty_dir]]
               name = "docker-certs"
               mount_path = "/certs/client"
+              medium = "Memory"
             # [[runners.kubernetes.volumes.empty_dir]]
             #   name = "repo"
             #   mount_path = "/builds"
