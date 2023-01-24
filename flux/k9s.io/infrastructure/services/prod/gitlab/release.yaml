@@ -91,6 +91,8 @@ spec:
       install: false
 
     gitlab-runner:
+      image:
+        tag: alpine-v15.8.0
       install: true
       rbac:
         clusterWideAccess: true
