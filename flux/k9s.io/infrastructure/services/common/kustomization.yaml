@@ -9,5 +9,6 @@ resources:
   - nginx/internal
   - nginx/external
   - nginx/external-noauth
+  - observability
   - sources
 #  - coredns.yaml

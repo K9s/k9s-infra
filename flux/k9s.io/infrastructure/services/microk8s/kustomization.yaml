@@ -5,3 +5,4 @@ resources:
   - longhorn
 patchesStrategicMerge:
   - patch-kube-prometheus-stack.yaml
+  - patch-observability-elastic-cluster.yaml

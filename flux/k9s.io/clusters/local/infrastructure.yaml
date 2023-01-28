@@ -29,6 +29,6 @@ spec:
 #metadata:
 #  name: infrastructure-services-beta
 #spec:
-#  path: ./k9s.io/infrastructure/services/beta
+#  path: ./flux/k9s.io/infrastructure/services/beta
 #  dependsOn:
 #    - name: infrastructure-services
