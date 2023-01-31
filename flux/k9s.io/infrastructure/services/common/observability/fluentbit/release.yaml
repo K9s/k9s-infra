@@ -313,8 +313,9 @@ spec:
             Name                      es
             Host                      logs-es-http
             Match                     final.structured-logs
-            Index                     logs-flb-structured
-            Generate_ID               Off
+            Index                     logs-structured
+            Write_Operation           upsert
+            Generate_ID               On
             Suppress_Type_Name        On
             Port                      9200
             Time_Key_Nanos            On
@@ -329,8 +330,9 @@ spec:
             Name                      es
             Host                      logs-es-http
             Match                     final.raw-logs
-            Index                     logs-flb-raw
-            Generate_ID               Off
+            Index                     logs-raw
+            Write_Operation           upsert
+            Generate_ID               On
             Suppress_Type_Name        On
             Port                      9200
             Time_Key_Nanos            On
