@@ -227,6 +227,13 @@ spec:
             Preserve_Key          Off
             Parser                pass-through
     
+        [FILTER]
+            Name                  lua
+            Match                 structured-logs.*
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  normalize
+            type_array_key        tags
+    
         ### Reprocessing START
         [FILTER]
             Name                  rewrite_tag
@@ -283,13 +290,6 @@ spec:
             Match                 structured-logs.*
             Rename                msg         message
             Rename                log         message
-        
-        [FILTER]
-            Name                  lua
-            Match                 structured-logs.*
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  normalize
-            type_array_key        tags  
         
         [FILTER]
             Name                  lua
