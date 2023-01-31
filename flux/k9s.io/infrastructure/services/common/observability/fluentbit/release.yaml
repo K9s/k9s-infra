@@ -405,7 +405,7 @@ spec:
         [PARSER]
             Name        docker-daemon
             Format      regex
-            Regex       time="(?<time>[^ ]*)" level=(?<level>[^ ]*) msg="(?<msg>[^ ].*)"
+            Regex       (^\[(?<container>.*)] )?time="(?<time>[^ ]*)" level=(?<level>[^ ]*) msg="(?<=")(?<msg>.*?)(?=")"(?<log>.*)?
             Time_Key    time
             Time_Format %Y-%m-%dT%H:%M:%S
     
