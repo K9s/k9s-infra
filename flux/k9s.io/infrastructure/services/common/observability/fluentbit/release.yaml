@@ -218,13 +218,6 @@ spec:
             Rename                @timestamp  log_timestamp
             Rename                _id         log_id
             Rename                _index      log_index
-        
-        [FILTER]
-            Name                  lua
-            Match                 structured-logs.*
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  normalize
-            type_array_key        tags
     
         ### Reprocessing START
         [FILTER]
@@ -286,6 +279,13 @@ spec:
             Reserve_Data          On
             Preserve_Key          Off
             Parser                pass-through
+        
+        [FILTER]
+            Name                  lua
+            Match                 structured-logs.*
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  normalize
+            type_array_key        tags  
         
         [FILTER]
             Name                  lua
