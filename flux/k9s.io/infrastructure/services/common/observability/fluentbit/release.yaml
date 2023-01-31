@@ -19,7 +19,7 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
-    logLevel: warn
+    logLevel: info
 
     config:
       service: |
