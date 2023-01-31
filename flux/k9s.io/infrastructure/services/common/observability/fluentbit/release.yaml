@@ -219,6 +219,14 @@ spec:
             Rename                _id         log_id
             Rename                _index      log_index
     
+        [FILTER]
+            Name                  parser
+            Match                 structured-logs.*
+            Key_Name              msg
+            Reserve_Data          On
+            Preserve_Key          Off
+            Parser                pass-through
+    
         ### Reprocessing START
         [FILTER]
             Name                  rewrite_tag
@@ -270,15 +278,8 @@ spec:
         [FILTER]
             Name                  modify
             Match                 structured-logs.*
-            Rename                log         msg
-
-        [FILTER]
-            Name                  parser
-            Match                 structured-logs.*
-            Key_Name              msg
-            Reserve_Data          On
-            Preserve_Key          Off
-            Parser                pass-through
+            Rename                msg         message
+            Rename                log         message
         
         [FILTER]
             Name                  lua
@@ -461,7 +462,7 @@ spec:
         [PARSER]
             Name                pass-through
             Format              regex
-            Regex               ^(?<message>.*)$
+            Regex               ^(?<msg>.*)$
             Decode_Field_As     escaped     msg
 
     luaScripts:
