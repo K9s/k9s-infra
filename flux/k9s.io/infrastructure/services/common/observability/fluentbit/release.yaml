@@ -267,7 +267,13 @@ spec:
             Match                 structured-logs.*
             Operation             lift
             Nested_under          httprequest
-    
+        
+        [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          req
+        
         [FILTER]
             Name                  modify
             Match                 structured-logs.*
