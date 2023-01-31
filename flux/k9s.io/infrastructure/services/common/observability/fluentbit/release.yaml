@@ -263,6 +263,12 @@ spec:
         ### Reprocessing END
     
         [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          httprequest
+    
+        [FILTER]
             Name                  modify
             Match                 structured-logs.*
             Rename                log         msg
