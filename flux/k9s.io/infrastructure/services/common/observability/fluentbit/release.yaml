@@ -250,7 +250,7 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Match                 structured-logs.*
-            Rule                  $log ^\S*= structured-logs.reprocess.logfmt false
+            Rule                  $log ^\S*=.*=.*$ structured-logs.reprocess.logfmt false
             Emitter_Name          structured-logs.reprocess.logfmt
         
         [FILTER]
