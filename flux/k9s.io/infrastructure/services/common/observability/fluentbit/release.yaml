@@ -228,6 +228,24 @@ spec:
             Parser                pass-through
     
         [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          httprequest
+        
+        [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          req
+        
+        [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          res
+    
+        [FILTER]
             Name                  lua
             Match                 structured-logs.*
             script                /fluent-bit/scripts/sanitize_records.lua
@@ -272,24 +290,6 @@ spec:
             Record                _reprocessed_msg true
         
         ### Reprocessing END
-    
-        [FILTER]
-            Name                  nest
-            Match                 structured-logs.*
-            Operation             lift
-            Nested_under          httprequest
-        
-        [FILTER]
-            Name                  nest
-            Match                 structured-logs.*
-            Operation             lift
-            Nested_under          req
-        
-        [FILTER]
-            Name                  nest
-            Match                 structured-logs.*
-            Operation             lift
-            Nested_under          res
 
         [FILTER]
             Name                  modify
