@@ -27,6 +27,12 @@ spec:
     serviceMonitor:
       enabled: true
 
+    service:
+      annotations:
+       prometheus.io/path: "/api/v1/metrics/prometheus"
+       prometheus.io/port: "2020"
+       prometheus.io/scrape: "true"
+
     config:
       service: |
         [SERVICE]
@@ -240,24 +246,6 @@ spec:
             call                  normalize
             type_array_key        tags
         
-        [FILTER]
-            Name                  nest
-            Match                 structured-logs.*
-            Operation             lift
-            Nested_under          httprequest
-        
-        [FILTER]
-            Name                  nest
-            Match                 structured-logs.*
-            Operation             lift
-            Nested_under          req
-        
-        [FILTER]
-            Name                  nest
-            Match                 structured-logs.*
-            Operation             lift
-            Nested_under          res
-        
         ### Reprocessing START
         [FILTER]
             Name                  rewrite_tag
@@ -296,6 +284,24 @@ spec:
             Record                _reprocessed_msg true
         
         ### Reprocessing END
+
+        [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          httprequest
+        
+        [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          req
+        
+        [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          res
 
         [FILTER]
             Name                  lua
