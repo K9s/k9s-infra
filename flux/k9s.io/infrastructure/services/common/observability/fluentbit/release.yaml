@@ -21,6 +21,9 @@ spec:
   values:
     logLevel: info
 
+    dashboards:
+      enabled: true
+
     config:
       service: |
         [SERVICE]
