@@ -286,6 +286,12 @@ spec:
             Nested_under          req
         
         [FILTER]
+            Name                  nest
+            Match                 structured-logs.*
+            Operation             lift
+            Nested_under          res
+
+        [FILTER]
             Name                  modify
             Match                 structured-logs.*
             Rename                msg         message
