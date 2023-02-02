@@ -581,6 +581,11 @@ spec:
                     value = string.upper(value)
                 end
         
+                --Map {} to empty string
+                if value == "{}" then
+                    value = ""
+                end
+        
                 --Ensure field name has valid name.  If any field is invalid add to _rejected_fields field for troubleshooting
                 if field:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") then
                     _record[field] = value
