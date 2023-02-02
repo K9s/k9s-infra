@@ -220,9 +220,9 @@ spec:
             Name                  modify
             Name                  modify
             Match                 structured-logs.*
+            Rename                severity    level
             Rename                log_level   level
             Rename                log.level   level
-            Rename                severity    level
             Rename                lvl         level
             Rename                errors      error
             Rename                err         error
