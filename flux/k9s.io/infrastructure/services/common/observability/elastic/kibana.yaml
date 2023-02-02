@@ -14,6 +14,7 @@ spec:
   config:
     xpack.security.enabled: false
     server.publicBaseUrl: "https://logs.es.${environment}.${domain}"
+    elasticsearch.requestTimeout: 3600000
   podTemplate:
     spec:
       containers:
