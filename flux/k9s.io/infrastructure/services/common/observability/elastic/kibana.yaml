@@ -16,6 +16,7 @@ spec:
     server.publicBaseUrl: "https://logs.es.${environment}.${domain}"
     elasticsearch.requestTimeout: 3600000
     server.keepaliveTimeout: 3600000
+    server.socketTimeout: 3600000
   podTemplate:
     spec:
       containers:
