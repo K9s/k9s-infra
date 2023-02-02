@@ -31,5 +31,5 @@ spec:
       "$upstream_status", "upstreamAddr": "$upstream_addr","httpRequest":{"requestMethod":
       "$request_method", "requestUrl": "$host$request_uri", "status": $status,"requestSize":
       "$request_length", "responseSize": "$upstream_response_length", "userAgent": "$http_user_agent",
-      "remoteIp": "$remote_addr", "referer": "$http_referer", "latency": "$upstream_response_time s",
+      "remoteIp": "$remote_addr", "referer": "$http_referer", "latency": "$upstream_response_time",
       "protocol":"$server_protocol"}}'
