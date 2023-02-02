@@ -4,6 +4,7 @@ metadata:
   name: es-logs-ingress
   annotations:
     kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout:  "3600"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 #    nginx.ingress.kubernetes.io/auth-url: "https://auth.${environment}.${domain}/oauth2/auth"
