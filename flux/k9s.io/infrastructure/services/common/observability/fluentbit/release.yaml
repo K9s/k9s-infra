@@ -55,7 +55,7 @@ spec:
       inputs: |
         [INPUT]
             Name                  tail
-            Alias                 input.container
+            Alias                 input.kube.cluster
             Tag                   input.kube.cluster.*
             Path                  /var/log/containers/*.log
             Parser                cri
@@ -71,7 +71,7 @@ spec:
         
         [INPUT]
             Name                  tail
-            Alias                 input.auth
+            Alias                 input.host.auth
             Tag                   input.host.auth.*
             Path                  /var/log/auth.log
             DB                    /var/log/flb_auth_log.db
@@ -85,7 +85,7 @@ spec:
 
         #[INPUT]
         #    Name                  systemd
-        #    Alias                 input.systemd
+        #    Alias                 input.host.systemd
         #    Tag                   input.host.systemd.*
         #    Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-kicker.service 
         #    Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-cluster-agent.service
