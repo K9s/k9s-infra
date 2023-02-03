@@ -38,9 +38,6 @@ spec:
     prometheus:
       prometheusSpec:
         serviceMonitorSelectorNilUsesHelmValues: false
-        podMonitorSelector:
-          matchLabels:
-            app.kubernetes.io/part-of: flux
         storageSpec:
           volumeClaimTemplate:
             spec:
