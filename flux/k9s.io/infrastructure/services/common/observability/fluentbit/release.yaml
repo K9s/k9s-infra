@@ -235,16 +235,13 @@ spec:
     
         [FILTER]
             Name                  modify
-            Alias                 structured-logs.rename.level-error-hostname
+            Alias                 structured-logs.rename.level
             Name                  modify
             Match                 structured-logs.*
             Rename                severity    level
             Rename                log_level   level
             Rename                log.level   level
             Rename                lvl         level
-            Rename                errors      error
-            Rename                err         error
-            Rename                host        hostname
         
         [FILTER]
             Name                  modify
@@ -352,6 +349,23 @@ spec:
             Match                 structured-logs.*
             Rename                msg         message
             Rename                log         message
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured-logs.rename.misc
+            Match                 structured-logs.*
+            Rename                uri           url
+            Rename                time          timestamp
+            Rename                ts            timestamp
+            Rename                log_timestamp timestamp
+            Rename                status        statuscode
+            Rename                code          statuscode
+            Rename                requestmethod method
+            Rename                agent         user-agent
+            Rename                user_agent    user-agent
+            Rename                errors        error
+            Rename                err           error
+            Rename                host          hostname
         
         [FILTER]
             Name                  lua
