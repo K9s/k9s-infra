@@ -353,6 +353,7 @@ spec:
       outputs: |
         [OUTPUT]
             Name                      es
+            Alias                     structured-logs
             Host                      logs-es-http
             Match                     final.structured-logs
             Index                     logs-structured
@@ -370,6 +371,7 @@ spec:
     
         [OUTPUT]
             Name                      es
+            Alias                     raw-logs
             Host                      logs-es-http
             Match                     final.raw-logs
             Index                     logs-raw
