@@ -3,7 +3,7 @@ kind: Kibana
 metadata:
   name: logs
 spec:
-  version: 7.17.2
+  version: 7.17.9
   count: 1
   http:
     tls:
