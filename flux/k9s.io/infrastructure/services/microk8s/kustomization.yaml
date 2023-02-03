@@ -3,6 +3,14 @@ resources:
   - ../common
   - ceph-csi-rbd
   - longhorn
+
+patches:
+- path: patch-observability-elastic-cluster.yaml
+  target:
+    group: elasticsearch.k8s.elastic.co
+    version: v1
+    kind: Elasticsearch
+    name: logs
+
 patchesStrategicMerge:
   - patch-kube-prometheus-stack.yaml
-  - patch-observability-elastic-cluster.yaml

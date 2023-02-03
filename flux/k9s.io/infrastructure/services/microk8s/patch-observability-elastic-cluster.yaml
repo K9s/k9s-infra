@@ -1,26 +1,5 @@
-apiVersion: elasticsearch.k8s.elastic.co/v1
-kind: Elasticsearch
-metadata:
-  name: logs
-spec:
-  version: 7.17.2
-  nodeSets:
-    - name: data
-      count: 3
-      volumeClaimTemplates:
-        - metadata:
-            name: elasticsearch-data
-          spec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 500Gi
-            storageClassName: rbd-slow
-      config:
-        node.store.allow_mmap: false
-        xpack.security.authc:
-          anonymous:
-            username: anonymous_user
-            roles: kibana_admin, viewer, superuser
-            authz_exception: true
+[
+  {"op": "replace",
+   "path": "/spec/nodeSets/0/volumeClaimTemplates/0/spec/storageClassName",
+   "value": "rbd-slow"}
+]

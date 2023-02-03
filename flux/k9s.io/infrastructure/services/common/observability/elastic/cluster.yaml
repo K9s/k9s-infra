@@ -3,7 +3,7 @@ kind: Elasticsearch
 metadata:
   name: logs
 spec:
-  version: 7.17.2
+  version: 7.17.9
   nodeSets:
     - name: data
       count: 3
@@ -16,7 +16,7 @@ spec:
             resources:
               requests:
                 storage: 500Gi
-#            storageClassName: rbd
+            storageClassName: longhorn
       config:
         node.store.allow_mmap: false
         xpack.security.authc:
