@@ -105,6 +105,7 @@ spec:
         # Kubernetes
         [FILTER]
             Name                  kubernetes
+            Alias                 kubernetes
             Match                 input.kube.cluster.*
             Kube_URL              https://kubernetes.default.svc:443
             Kube_CA_File          /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -119,6 +120,7 @@ spec:
         
         [FILTER]
             Name                  nest
+            Alias                 lift.kubernetes
             Match                 input.kube.cluster.*
             Operation             lift
             Nested_under          kubernetes
@@ -126,6 +128,7 @@ spec:
     
         [FILTER]
             Name                  nest
+            Alias                 lift.kubernetes.labels
             Match                 input.kube.cluster.*
             Operation             lift
             Nested_under          kubernetes_labels
@@ -133,6 +136,7 @@ spec:
     
         [FILTER]
             Name                  nest
+            Alias                 lift.kubernetes.annotations
             Match                 input.kube.cluster.*
             Operation             lift
             Nested_under          kubernetes_annotations
@@ -141,6 +145,7 @@ spec:
         # Raw Logs
         [FILTER]
             Name                  lua
+            Alias                 record.log_source
             Match                 input.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  log_source
@@ -148,6 +153,7 @@ spec:
     
         [FILTER]
             Name                  rewrite_tag
+            Alias                 raw-logs.ingest
             Match                 input.*
             Rule                  $_log_source ^. raw-logs.ingest.$TAG[1].$TAG[2] true
             Emitter_Name          raw-logs
@@ -155,12 +161,14 @@ spec:
         # Structured Logs
         [FILTER]
             Name                  rewrite_tag
+            Alias                 structured-logs.ingest
             Match                 input.*
             Rule                  $_log_source ^. structured-logs.ingest.$TAG[1].$TAG[2] false
             Emitter_Name          structured-logs
     
         [FILTER]
             Name                  modify
+            Alias                 structured-logs.rename.log
             Match                 structured-logs.*
             Rename                message   log
             Rename                MESSAGE   log
@@ -168,16 +176,19 @@ spec:
         
         [FILTER]
             Name                  record_modifier
+            Alias                 structured-logs.record._reprocessed
             Match                 structured-logs.ingest.*
             Record                _reprocessed no
         
         [FILTER]
             Name                  modify
+            Alias                 structured-logs.copy._raw_log
             Match                 structured-logs.ingest.*
             Copy                  log _raw_log
     
         [FILTER]
             Name                  parser
+            Alias                 structured-logs.parse.simple
             Match                 structured-logs.*
             Key_Name              log
             Reserve_Data          On
@@ -186,6 +197,7 @@ spec:
     
         [FILTER]
             Name                  parser
+            Alias                 structured-logs.parse
             Match                 structured-logs.*
             Key_Name              log
             Reserve_Data          On
@@ -206,6 +218,7 @@ spec:
         # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
         [FILTER]
             Name                  parser
+            Alias                 structured-logs.parse.logfmt
             Match                 structured-logs.reprocess.logfmt
             Key_Name              log
             Reserve_Data          On
@@ -215,12 +228,14 @@ spec:
         # If logfmt ^ fails to parse (resulting in log field remaining) rename that field to prevent loop during reprocessing
         [FILTER]
             Name                  modify
+            Alias                 structured-logs.rename._log
             Name                  modify
             Match                 structured-logs.reprocess.logfmt
             Hard_rename           log         _log
     
         [FILTER]
             Name                  modify
+            Alias                 structured-logs.rename.level-error-hostname
             Name                  modify
             Match                 structured-logs.*
             Rename                severity    level
@@ -230,12 +245,19 @@ spec:
             Rename                errors      error
             Rename                err         error
             Rename                host        hostname
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured-logs.rename.es
+            Name                  modify
+            Match                 structured-logs.*
             Rename                @timestamp  log_timestamp
             Rename                _id         log_id
             Rename                _index      log_index
     
         [FILTER]
             Name                  parser
+            Alias                 structured-logs.parse.pass-through
             Match                 structured-logs.*
             Key_Name              msg
             Reserve_Data          On
@@ -244,6 +266,7 @@ spec:
     
         [FILTER]
             Name                  lua
+            Alias                 structured-logs.normalize
             Match                 structured-logs.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
@@ -252,36 +275,42 @@ spec:
         ### Reprocessing START
         [FILTER]
             Name                  rewrite_tag
+            Alias                 structured-logs.reprocess.logfmt
             Match                 structured-logs.*
             Rule                  $log ^\S*=.*=.*$ structured-logs.reprocess.logfmt false
             Emitter_Name          structured-logs.reprocess.logfmt
         
         [FILTER]
             Name                  record_modifier
+            Alias                 structured-logs.record.reprocess.logfmt
             Match                 structured-logs.reprocess.logfmt
             Record                _reprocessed logfmt
             Record                _reprocessed_logfmt true
 
         [FILTER]
             Name                  rewrite_tag
+            Alias                 structured-logs.reprocess.log
             Match                 structured-logs.ingest.*
             Rule                  $log ^. structured-logs.reprocess.log false
             Emitter_Name          structured-logs.reprocess.log
         
         [FILTER]
             Name                  record_modifier
+            Alias                 structured-logs.record.reprocess.log
             Match                 structured-logs.reprocess.log
             Record                _reprocessed log
             Record                _reprocessed_log true
         
         [FILTER]
             Name                  rewrite_tag
+            Alias                 structured-logs.reprocess.msg
             Match                 structured-logs.ingest.*
             Rule                  $msg ^. structured-logs.reprocess.msg false
             Emitter_Name          structured-logs.reprocess.msg
         
         [FILTER]
             Name                  record_modifier
+            Alias                 structured-logs.record.reprocess.msg
             Match                 structured-logs.reprocess.msg
             Record                _reprocessed msg
             Record                _reprocessed_msg true
@@ -290,24 +319,28 @@ spec:
 
         [FILTER]
             Name                  nest
+            Alias                 structured-logs.lift.httprequest
             Match                 structured-logs.*
             Operation             lift
             Nested_under          httprequest
         
         [FILTER]
             Name                  nest
+            Alias                 structured-logs.lift.req
             Match                 structured-logs.*
             Operation             lift
             Nested_under          req
         
         [FILTER]
             Name                  nest
+            Alias                 structured-logs.lift.res
             Match                 structured-logs.*
             Operation             lift
             Nested_under          res
 
         [FILTER]
             Name                  lua
+            Alias                 structured-logs.normalize.final
             Match                 structured-logs.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
@@ -315,19 +348,22 @@ spec:
 
         [FILTER]
             Name                  modify
+            Alias                 structured-logs.rename.message
             Match                 structured-logs.*
             Rename                msg         message
             Rename                log         message
         
         [FILTER]
             Name                  lua
-            Match                 structured-logs.*
+            Alias                 record.log_tag
+            Match                 *
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  log_tag
             type_array_key        tags
         
         [FILTER]
             Name                  rewrite_tag
+            Alias                 final-structured-logs
             Emitter_Storage.type  filesystem
             Match                 structured-logs.*
             Rule                  $_log_source ^. final.structured-logs false
@@ -335,6 +371,7 @@ spec:
         
         [FILTER]
             Name                  rewrite_tag
+            Alias                 final.raw-log
             Emitter_Storage.type  filesystem
             Match                 raw-logs.*
             Rule                  $_log_source ^. final.raw-logs false
