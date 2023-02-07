@@ -365,6 +365,7 @@ spec:
             Rename                errors        error
             Rename                err           error
             Rename                host          hostname
+            Rename                uname         name
         
         [FILTER]
             Name                  lua
