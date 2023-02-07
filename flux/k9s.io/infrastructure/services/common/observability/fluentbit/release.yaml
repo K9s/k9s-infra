@@ -96,7 +96,6 @@ spec:
             Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
             DB                    /var/log/flb_systemd.db
             Mem_Buf_Limit         200MB
-            Buffer_Max_Size       1M
             Strip_Underscores     On
             threaded              on
 
