@@ -638,8 +638,8 @@ spec:
                 end
         
                 --Map {} to empty string
-                if value == "{}" then
-                    value = ""
+                if (type(value) == "table" and next(value) == nil) or value == "{}" then
+                    value = nil
                 end
         
                 --Ensure field name has valid name.  If any field is invalid add to _rejected_fields field for troubleshooting
