@@ -78,7 +78,6 @@ spec:
             Mem_Buf_Limit         200MB
             Buffer_Chunk_Size     256k
             Buffer_Max_Size       1M
-            Skip_Long_Lines       On
             Skip_Empty_Lines      On
             Refresh_Interval      10
             threaded              on
@@ -97,7 +96,10 @@ spec:
             Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
             DB                    /var/log/flb_systemd.db
             Mem_Buf_Limit         200MB
-            Strip_Underscores     On
+            Buffer_Chunk_Size     256k
+            Buffer_Max_Size       1M
+            Skip_Empty_Lines      On
+            Refresh_Interval      10
             threaded              on
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
