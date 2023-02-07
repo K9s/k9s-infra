@@ -83,7 +83,7 @@ spec:
             Refresh_Interval      10
             threaded              on
 
-        #[INPUT]
+        [INPUT]
             Name                  systemd
             Alias                 input.host.systemd
             Tag                   input.host.systemd.*
