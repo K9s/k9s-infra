@@ -82,25 +82,23 @@ spec:
             Refresh_Interval      10
             threaded              on
 
-        [INPUT]
-            Name                  systemd
-            Alias                 input.host.systemd
-            Tag                   input.host.systemd.*
-            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-kicker.service 
-            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-cluster-agent.service
-            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-containerd.service
-            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-k8s-dqlite.service
-            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-kubelite.service
-            Systemd_Filter        _SYSTEMD_UNIT=ssh.service
-            Systemd_Filter        _SYSTEMD_UNIT=fstrim.service
-            Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
-            DB                    /var/log/flb_systemd.db
-            Mem_Buf_Limit         200MB
-            Buffer_Chunk_Size     256k
-            Buffer_Max_Size       1M
-            Skip_Empty_Lines      On
-            Refresh_Interval      10
-            threaded              on
+        #[INPUT]
+        #    Name                  systemd
+        #    Alias                 input.host.systemd
+        #    Tag                   input.host.systemd.*
+        #    Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-kicker.service 
+        #    Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-cluster-agent.service
+        #    Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-containerd.service
+        #    Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-k8s-dqlite.service
+        #    Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-kubelite.service
+        #    Systemd_Filter        _SYSTEMD_UNIT=ssh.service
+        #    Systemd_Filter        _SYSTEMD_UNIT=fstrim.service
+        #    Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
+        #    DB                    /var/log/flb_systemd.db
+        #    Mem_Buf_Limit         200MB
+        #    Buffer_Max_Size       1M
+        #    Strip_Underscores     On
+        #    threaded              on
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
       filters: |
