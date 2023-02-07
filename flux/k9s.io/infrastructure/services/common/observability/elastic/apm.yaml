@@ -1,0 +1,18 @@
+apiVersion: apm.k8s.elastic.co/v1
+kind: ApmServer
+metadata:
+  name: logs
+spec:
+  version: 7.17.9
+  count: 1
+  elasticsearchRef:
+    name: logs
+  kibanaRef:
+    name: logs
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  config:
+    xpack.security.enabled: false
+    server.publicBaseUrl: "https://apm.es.${environment}.${domain}"

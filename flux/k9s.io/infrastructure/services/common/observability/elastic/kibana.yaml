@@ -5,10 +5,6 @@ metadata:
 spec:
   version: 7.17.9
   count: 1
-  http:
-    tls:
-      selfSignedCertificate:
-        disabled: true
   elasticsearchRef:
     name: logs
   config:
@@ -17,12 +13,7 @@ spec:
     elasticsearch.requestTimeout: 3600000
     server.keepaliveTimeout: 3600000
     server.socketTimeout: 3600000
-  podTemplate:
-    spec:
-      containers:
-        - name: kibana
-          readinessProbe:
-            httpGet:
-              path: "/status"
-              port: 5601
-              scheme: HTTP
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
