@@ -17,6 +17,15 @@ spec:
     tls:
       selfSignedCertificate:
         disabled: true
+  podTemplate:
+    spec:
+      containers:
+        - name: kibana
+          readinessProbe:
+            httpGet:
+              path: "/status"
+              port: 5601
+              scheme: HTTP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
