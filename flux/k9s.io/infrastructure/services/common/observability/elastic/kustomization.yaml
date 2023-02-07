@@ -4,5 +4,4 @@ namespace: observability
 resources:
   - apm.yaml
   - cluster.yaml
-  - ingress.yaml
   - kibana.yaml
