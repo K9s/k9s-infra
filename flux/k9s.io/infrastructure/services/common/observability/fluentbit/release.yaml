@@ -59,7 +59,7 @@ spec:
             Tag                   input.kube.cluster.*
             Path                  /var/log/containers/*.log
             Parser                cri
-            multiline.parser      docker, cri, go, python, java
+            multiline.parser      docker, cri
             DB                    /var/log/flb_kube.db
             Mem_Buf_Limit         200MB
             Buffer_Chunk_Size     256k
@@ -349,6 +349,26 @@ spec:
             Rename                msg         message
             Rename                log         message
         
+        ### Multiline Reprocessing START
+        
+        [FILTER]
+            name                  multiline
+            Alias                 structured-logs.reprocess.multiline
+            match                 structured-logs.*
+            multiline.key_content message
+            multiline.parser      go, python, java
+            buffer                On
+            Emitter_Name          structured-logs.reprocess.multiline
+        
+        [FILTER]
+            Name                  record_modifier
+            Alias                 structured-logs.record.reprocess.multiline
+            Match                 structured-logs.reprocess.multiline
+            Record                _reprocessed multiline
+            Record                _reprocessed_multiline true
+        
+        ### Multiline Reprocessing END
+        
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.misc
@@ -390,12 +410,6 @@ spec:
             Match                 raw-logs.*
             Rule                  $_log_source ^. final.raw-logs false
             Emitter_Name          final-raw-logs
-        
-        #[FILTER]
-        #    name                  multiline
-        #    match                 final.structured-logs
-        #    multiline.key_content message
-        #    multiline.parser      go, python, java
 
         #[FILTER]
         #    Name    grep
@@ -636,12 +650,7 @@ spec:
                 if field == "method" then
                     value = string.upper(value)
                 end
-        
-                --Map {} to empty string
-                if (type(value) == "table" and next(value) == nil) or value == "{}" then
-                    value = nil
-                end
-        
+                
                 --Ensure field name has valid name.  If any field is invalid add to _rejected_fields field for troubleshooting
                 if field:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") then
                     _record[field] = value
