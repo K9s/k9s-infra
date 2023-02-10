@@ -434,7 +434,7 @@ spec:
             tls                       On
             tls.verify                Off
             Trace_Error               On
-            Buffer_Size               64k
+            Buffer_Size               1M
             storage.total_limit_size  2000M
     
         [OUTPUT]
@@ -452,7 +452,7 @@ spec:
             tls                       On
             tls.verify                Off
             Trace_Error               On
-            Buffer_Size               64k
+            Buffer_Size               1M
             storage.total_limit_size  2000M
 
       ## https://docs.fluentbit.io/manual/pipeline/parsers
