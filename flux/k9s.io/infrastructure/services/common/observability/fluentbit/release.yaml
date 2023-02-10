@@ -356,7 +356,7 @@ spec:
             Alias                 structured-logs.reprocess.multiline
             match                 structured-logs.*
             multiline.key_content message
-            multiline.parser      go, python, java
+            multiline.parser      cri, docker, go, python, java
             buffer                On
             Emitter_Name          structured-logs.reprocess.multiline
         
