@@ -141,7 +141,6 @@ spec:
             Nested_under          kubernetes_annotations
             Add_prefix            kubernetes_annotations/
         
-        # Raw Logs
         [FILTER]
             Name                  lua
             Alias                 record.log_source
@@ -150,6 +149,7 @@ spec:
             call                  log_source
             type_array_key        tags
     
+        # Raw Logs
         [FILTER]
             Name                  rewrite_tag
             Alias                 raw-logs.ingest
@@ -649,6 +649,11 @@ spec:
                 --Normalize method field value
                 if field == "method" then
                     value = string.upper(value)
+                end
+                
+                --Map {} to empty string
+                if (type(value) == "table" and next(value) == nil) or value == "{}" then
+                    value = nil
                 end
                 
                 --Ensure field name has valid name.  If any field is invalid add to _rejected_fields field for troubleshooting
