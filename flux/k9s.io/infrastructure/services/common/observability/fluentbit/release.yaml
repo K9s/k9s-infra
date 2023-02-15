@@ -349,6 +349,26 @@ spec:
             Rename                msg         message
             Rename                log         message
         
+        ### Multiline Reprocessing START
+        
+        [FILTER]
+            name                  multiline
+            Alias                 structured-logs.reprocess.multiline
+            match                 structured-logs.*
+            multiline.key_content message
+            multiline.parser      cri, docker, go, python, java
+            buffer                On
+            Emitter_Name          structured-logs.reprocess.multiline
+        
+        [FILTER]
+            Name                  record_modifier
+            Alias                 structured-logs.record.reprocess.multiline
+            Match                 structured-logs.reprocess.multiline
+            Record                _reprocessed multiline
+            Record                _reprocessed_multiline true
+        
+        ### Multiline Reprocessing END
+        
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.misc
@@ -390,26 +410,6 @@ spec:
             Match                 raw-logs.*
             Rule                  $_log_source ^. final.raw-logs false
             Emitter_Name          final-raw-logs
-        
-        ### Multiline Reprocessing START
-        
-        [FILTER]
-            name                  multiline
-            Alias                 structured-logs.reprocess.multiline
-            match                 final.structured-logs
-            multiline.key_content message
-            multiline.parser      cri, docker, go, python, java
-            buffer                On
-            Emitter_Name          structured-logs.reprocess.multiline
-        
-        [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record.reprocess.multiline
-            Match                 structured-logs.reprocess.multiline
-            Record                _reprocessed multiline
-            Record                _reprocessed_multiline true
-        
-        ### Multiline Reprocessing END
         
         #[FILTER]
         #    Name    grep
