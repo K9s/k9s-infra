@@ -177,17 +177,17 @@ spec:
         
         [FILTER]
             name                  multiline
-            Alias                 structured-logs.multiline
+            Alias                 structured-logs.reprocess.multiline
             match                 structured-logs.ingest.*
             multiline.key_content log
             multiline.parser      cri, docker, go, python, java
             buffer                On
-            Emitter_Name          structured-logs.multiline
+            Emitter_Name          structured-logs.reprocess.multiline
         
         [FILTER]
             Name                  record_modifier
-            Alias                 structured-logs.record.multiline
-            Match                 structured-logs.multiline
+            Alias                 structured-logs.record.reprocess.multiline
+            Match                 structured-logs.reprocess.multiline
             Record                _reprocessed multiline
             Record                _reprocessed_multiline true
         
