@@ -173,6 +173,26 @@ spec:
             Rename                MESSAGE   log
             Rename                msg       log
         
+        ### Multiline Reprocessing START
+        
+        [FILTER]
+            name                  multiline
+            Alias                 structured-logs.multiline
+            match                 structured-logs.ingest.*
+            multiline.key_content log
+            multiline.parser      cri, docker, go, python, java
+            buffer                On
+            Emitter_Name          structured-logs.multiline
+        
+        [FILTER]
+            Name                  record_modifier
+            Alias                 structured-logs.record.multiline
+            Match                 structured-logs.multiline
+            Record                _reprocessed multiline
+            Record                _reprocessed_multiline true
+        
+        ### Multiline Reprocessing END
+        
         [FILTER]
             Name                  record_modifier
             Alias                 structured-logs.record._reprocessed
@@ -349,26 +369,6 @@ spec:
             Rename                msg         message
             Rename                log         message
         
-        ### Multiline Reprocessing START
-        
-        [FILTER]
-            name                  multiline
-            Alias                 structured-logs.reprocess.multiline
-            match                 structured-logs.*
-            multiline.key_content message
-            multiline.parser      cri, docker, go, python, java
-            buffer                On
-            Emitter_Name          structured-logs.reprocess.multiline
-        
-        [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record.reprocess.multiline
-            Match                 structured-logs.reprocess.multiline
-            Record                _reprocessed multiline
-            Record                _reprocessed_multiline true
-        
-        ### Multiline Reprocessing END
-        
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.misc
@@ -390,7 +390,7 @@ spec:
         [FILTER]
             Name                  lua
             Alias                 record.log_tag
-            Match                 *
+            Match                 structured-logs.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  log_tag
             type_array_key        tags
