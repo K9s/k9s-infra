@@ -49,6 +49,8 @@ spec:
             HC_Period               5
             storage.metrics         true
             storage.path            /var/log/flb_buffer
+            storage.max_chunks_up   20
+            storage.pause_on_chunks_overlimit On
             scheduler.cap           600
 
       ## https://docs.fluentbit.io/manual/pipeline/inputs
