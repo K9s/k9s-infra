@@ -60,7 +60,7 @@ spec:
             Path                  /var/log/containers/*.log
             Parser                cri
             multiline.parser      docker, cri
-            DB                    /var/log/flb_kube.db
+            DB                    /var/log/flb_buffer/flb_kube.db
             Mem_Buf_Limit         200MB
             Buffer_Chunk_Size     256k
             Buffer_Max_Size       1M
@@ -74,7 +74,7 @@ spec:
             Alias                 input.host.auth
             Tag                   input.host.auth.*
             Path                  /var/log/auth.log
-            DB                    /var/log/flb_auth_log.db
+            DB                    /var/log/flb_buffer/flb_auth_log.db
             Mem_Buf_Limit         200MB
             Buffer_Chunk_Size     256k
             Buffer_Max_Size       1M
@@ -94,7 +94,7 @@ spec:
             Systemd_Filter        _SYSTEMD_UNIT=ssh.service
             Systemd_Filter        _SYSTEMD_UNIT=fstrim.service
             Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
-            DB                    /var/log/flb_systemd.db
+            DB                    /var/log/flb_buffer/flb_systemd.db
             Mem_Buf_Limit         200MB
             Strip_Underscores     On
             threaded              on
@@ -435,7 +435,7 @@ spec:
             tls.verify                Off
             Trace_Error               On
             Buffer_Size               1M
-            storage.total_limit_size  2000M
+            storage.total_limit_size  200M
     
         [OUTPUT]
             Name                      es
@@ -453,7 +453,7 @@ spec:
             tls.verify                Off
             Trace_Error               On
             Buffer_Size               1M
-            storage.total_limit_size  2000M
+            storage.total_limit_size  200M
 
       ## https://docs.fluentbit.io/manual/pipeline/parsers
       customParsers: |
