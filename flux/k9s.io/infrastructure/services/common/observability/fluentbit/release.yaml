@@ -63,7 +63,8 @@ spec:
             Parser                cri
             multiline.parser      docker, cri
             DB                    /var/log/flb_kube.db
-            Mem_Buf_Limit         200MB
+            storage.type          memrb
+            Mem_Buf_Limit         50MB
             Buffer_Chunk_Size     256k
             Buffer_Max_Size       1M
             Skip_Long_Lines       On
@@ -77,7 +78,8 @@ spec:
             Tag                   input.host.auth.*
             Path                  /var/log/auth.log
             DB                    /var/log/flb_auth_log.db
-            Mem_Buf_Limit         200MB
+            storage.type          memrb
+            Mem_Buf_Limit         50MB
             Buffer_Chunk_Size     256k
             Buffer_Max_Size       1M
             Skip_Empty_Lines      On
@@ -97,7 +99,8 @@ spec:
             Systemd_Filter        _SYSTEMD_UNIT=fstrim.service
             Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
             DB                    /var/log/flb_systemd.db
-            Mem_Buf_Limit         200MB
+            storage.type          memrb
+            Mem_Buf_Limit         50MB
             Strip_Underscores     On
             threaded              on
 
