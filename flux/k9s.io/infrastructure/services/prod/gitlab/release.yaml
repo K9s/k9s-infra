@@ -64,8 +64,9 @@ spec:
 
       sidekiq:
         minReplicas: 2
-        cpu:
-          targetAverageUtilization: 75
+        hpa:
+          cpu:
+            targetAverageUtilization: 75
 
       kas:
         ingress:
