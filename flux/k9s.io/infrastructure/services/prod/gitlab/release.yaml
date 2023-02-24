@@ -63,10 +63,10 @@ spec:
         minReplicas: 2
 
       sidekiq:
-        minReplicas: 2
+        minReplicas: 4
         hpa:
           cpu:
-            targetAverageValue: 2
+            targetAverageValue: 750m
 
       kas:
         ingress:
