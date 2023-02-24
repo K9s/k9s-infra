@@ -60,14 +60,12 @@ spec:
         ingress:
           tls:
             secretName: gitlab-tls
-        hpa:
-          minReplicas: 2
+        minReplicas: 2
 
       sidekiq:
-        hpa:
-          minReplicas: 2
-          cpu:
-            targetAverageUtilization: 75
+        minReplicas: 2
+        cpu:
+          targetAverageUtilization: 75
 
       kas:
         ingress:
