@@ -73,6 +73,9 @@ spec:
             secretName: pages-star-tls
 
     registry:
+      requests:
+        cpu: 500m
+        memory: 100Mi
       hpa:
         minReplicas: 2
       ingress:
