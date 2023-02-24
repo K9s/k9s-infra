@@ -60,13 +60,20 @@ spec:
         ingress:
           tls:
             secretName: gitlab-tls
-        minReplicas: 2
+        hpa:
+          minReplicas: 2
+
       sidekiq:
-        minReplicas: 2
+        hpa:
+          minReplicas: 2
+          cpu:
+            targetAverageUtilization: 75
+
       kas:
         ingress:
           tls:
             secretName: kas-tls
+
       gitlab-pages:
         ingress:
           tls:
@@ -79,6 +86,8 @@ spec:
           memory: 100Mi
       hpa:
         minReplicas: 2
+        cpu:
+          targetAverageUtilization: 75
       ingress:
         tls:
           secretName: registry-tls
