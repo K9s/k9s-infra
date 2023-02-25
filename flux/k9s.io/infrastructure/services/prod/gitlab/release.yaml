@@ -121,8 +121,8 @@ spec:
         locked: false
         config: |
           [[runners]]
-            pre_clone_script = '''
-              ##### Runner pre_clone_script #####
+            pre_get_sources_script = '''
+              ##### Runner pre_get_sources_script #####
               cat /etc/resolv.conf | sed -r "s/^(options.*)/#\1/" > /tmp/resolv && cat /tmp/resolv > /etc/resolv.conf
             '''
 
