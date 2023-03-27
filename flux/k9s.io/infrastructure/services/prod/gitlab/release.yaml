@@ -107,8 +107,9 @@ spec:
       rbac:
         clusterWideAccess: true
         create: true
+      replicas: 10
       concurrent: 50
-      checkInterval: 5
+      checkInterval: 30
       logFormat: json
       metrics:
         enabled: true
@@ -127,7 +128,6 @@ spec:
             '''
 
             [runners.kubernetes]
-              request_concurrency = 10
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
               namespace = "ci-builds"
