@@ -107,9 +107,9 @@ spec:
       rbac:
         clusterWideAccess: true
         create: true
-      replicas: 10
-      concurrent: 50
-      checkInterval: 30
+      replicas: 1
+      concurrent: 200
+      checkInterval: 5
       logFormat: json
       metrics:
         enabled: true
@@ -128,6 +128,7 @@ spec:
             '''
 
             [runners.kubernetes]
+              request_concurrency = 10
               image = "ubuntu:20.04"
               helper_image_flavor = "ubuntu"
               namespace = "ci-builds"
@@ -156,10 +157,10 @@ spec:
               name = "docker-certs"
               mount_path = "/certs/client"
               medium = "Memory"
-            # [[runners.kubernetes.volumes.empty_dir]]
-            #   name = "repo"
-            #   mount_path = "/builds"
-            #   medium = "Memory"
+            [[runners.kubernetes.volumes.empty_dir]]
+              name = "repo"
+              mount_path = "/builds"
+              medium = "Memory"
             {{- if .Values.global.minio.enabled }}
             [runners.cache]
               Type = "s3"
