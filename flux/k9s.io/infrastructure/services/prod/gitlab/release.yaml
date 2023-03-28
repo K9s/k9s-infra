@@ -67,7 +67,7 @@ spec:
         concurrency: 5
         hpa:
           cpu:
-            targetAverageValue: 350m
+            targetAverageValue: 750m
 
       kas:
         ingress:
