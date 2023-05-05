@@ -5,6 +5,10 @@ metadata:
 spec:
   values:
     minecraftServer:
+      type: "FORGE"
+      forgeVersion: "36.2.34"
+      version: "1.16.5"
       gameMode: survival
       difficulty: normal
-      version: 1.16.5
+      removeOldMods: true
+      modUrls: []
