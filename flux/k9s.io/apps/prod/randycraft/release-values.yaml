@@ -11,11 +11,12 @@ spec:
     minecraftServer:
       motd: "Welcome to RandyCraft Server"
       type: "FORGE"
-      forgeVersion: "36.2.34"
+      forgeVersion: "36.2.39"
       version: "1.16.5"
       gameMode: survival
       difficulty: normal
       levelType: biomesoplenty
       removeOldMods: true
-      modUrls:
-        - https://mediafilez.forgecdn.net/files/3360/574/BiomesOPlenty-1.16.5-13.1.0.477-universal.jar
+
+    extraEnv:
+      PACKWIZ_URL: https://k9s.pages.gitlab.app.k9s.io/minecraft/randycraft-modpack/pack.toml
