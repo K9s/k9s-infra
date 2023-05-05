@@ -15,7 +15,6 @@ spec:
   values:
     minecraftServer:
       eula: "TRUE"
-      ops: "2535412894030195,2535468526729235"
       serviceType: LoadBalancer
 
     persistence:
