@@ -17,6 +17,7 @@ spec:
       difficulty: normal
       levelType: biomesoplenty
       removeOldMods: true
+      memory: 4G
 
     extraEnv:
       PACKWIZ_URL: https://k9s.pages.gitlab.app.k9s.io/minecraft/randycraft-modpack/pack.toml
