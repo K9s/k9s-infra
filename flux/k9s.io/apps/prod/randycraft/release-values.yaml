@@ -7,6 +7,8 @@ metadata:
 spec:
   # https://github.com/itzg/minecraft-server-charts/blob/master/charts/minecraft/values.yaml
   values:
+    serviceAnnotations:
+      "mc-router.itzg.me/externalServerName": "randycraft.app.k9s.io"
     image:
       tag: java8-multiarch
     minecraftServer:
