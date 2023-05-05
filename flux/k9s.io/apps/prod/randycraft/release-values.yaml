@@ -1,13 +1,14 @@
+    # Docs https://github.com/itzg/docker-minecraft-server/blob/master/README.md
+
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: "minecraft"
 spec:
+  # https://github.com/itzg/minecraft-server-charts/blob/master/charts/minecraft/values.yaml
   values:
     image:
       tag: java8-multiarch
-
-    # Docs https://github.com/itzg/docker-minecraft-server/blob/master/README.md
     minecraftServer:
       motd: "Welcome to RandyCraft Server"
       type: "FORGE"
@@ -16,7 +17,7 @@ spec:
       gameMode: survival
       difficulty: normal
       levelType: biomesoplenty
-      removeOldMods: true
+      #removeOldMods: true
       memory: 4G
 
     extraEnv:
