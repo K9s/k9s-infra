@@ -12,5 +12,8 @@ spec:
       version: "1.16.5"
       gameMode: survival
       difficulty: normal
-      removeOldMods: true
-      modUrls: []
+    modrinth:
+      projects:
+        - botania
+      optionalDependencies: true
+      allowedVersionType: release
