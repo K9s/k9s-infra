@@ -15,7 +15,6 @@ spec:
   values:
     minecraftServer:
       eula: "TRUE"
-      serviceType: LoadBalancer
 
     persistence:
       dataDir:
