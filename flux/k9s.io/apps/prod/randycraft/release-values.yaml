@@ -4,6 +4,8 @@ metadata:
   name: "minecraft"
 spec:
   values:
+    image:
+      tag: java8
     minecraftServer:
       type: "FORGE"
       forgeVersion: "36.2.34"
