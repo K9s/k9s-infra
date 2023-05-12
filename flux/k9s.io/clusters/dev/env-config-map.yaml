@@ -4,10 +4,11 @@ metadata:
   name: env-config-map
   namespace: flux-system
 data:
-  domain: app.k9s.io
+  domain: services.k9s.io
   environment: dev
+  internal_environment: dev
   metallb_pool: "192.168.81.1-192.168.81.254"
   route53_accessKeyID: "AKIA52RV2VYP7FXZET54"
-  route53_hostedZoneID: "Z029600614L3XCL6C0S5R"
+  route53_hostedZoneID: "Z022564318U3FNV3PCCLF"
   owner_email: "mattkenn4545@gmail.com"
   defaultIssuerName: "letsencrypt-route53-production"
