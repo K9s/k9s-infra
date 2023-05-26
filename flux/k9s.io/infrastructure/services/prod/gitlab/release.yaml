@@ -3,10 +3,10 @@ kind: HelmRelease
 metadata:
   name: gitlab
 spec:
-  interval: 10s
+  interval: 1m
   chart:
     spec:
-      version: 6.11.6
+      version: 7.0.1
       chart: gitlab
       sourceRef:
         kind: HelmRepository
