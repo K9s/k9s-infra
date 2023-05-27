@@ -79,6 +79,10 @@ spec:
           tls:
             secretName: pages-star-tls
 
+    postgresql:
+      image:
+        tag: 12.7.0
+
     registry:
       resources:
         requests:
