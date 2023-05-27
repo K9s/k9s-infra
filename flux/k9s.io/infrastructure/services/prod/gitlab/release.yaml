@@ -56,9 +56,6 @@ spec:
       install: false
 
     gitlab:
-      migrations:
-        enabled: false
-
       webservice:
         ingress:
           tls:
