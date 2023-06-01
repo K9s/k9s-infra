@@ -130,7 +130,7 @@ spec:
 
             [runners.kubernetes]
               request_concurrency = 10
-              image = "ubuntu:20.04"
+              image = "ubuntu:22.04"
               helper_image_flavor = "ubuntu"
               namespace = "ci-builds"
               namespace_overwrite_allowed = "ci-.*"
