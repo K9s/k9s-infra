@@ -11,7 +11,7 @@ spec:
         kind: HelmRepository
         name: longhorn
         namespace: longhorn-system
-      version: "1.4.1"
+      version: "1.4.2"
   values:
     persistence:
       defaultClassReplicaCount: 1
