@@ -3,6 +3,7 @@ resources:
   - ../common
   - ceph-csi-rbd
   - longhorn
+  - observability
 
 patches:
 - path: patch-observability-elastic-cluster.yaml
