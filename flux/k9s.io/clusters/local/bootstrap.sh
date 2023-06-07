@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -eE
 
-KIND_VERSION=${KIND_VERSION:-"0.17.0"}
-KIND_K8S_VERSION=${KIND_K8S_VERSION:-"1.24.7"}
-KIND_IMAGE_DIGEST=${KIND_IMAGE_DIGEST:-"577c630ce8e509131eab1aea12c022190978dd2f745aac5eb1fe65c0807eb315"}
+KIND_VERSION=${KIND_VERSION:-"0.19.0"}
+KIND_K8S_VERSION=${KIND_K8S_VERSION:-"1.24.13"}
+KIND_IMAGE_DIGEST=${KIND_IMAGE_DIGEST:-"cea86276e698af043af20143f4bf0509e730ec34ed3b7fa790cc0bea091bc5dd"}
 
 docker build --build-arg BASE_IMAGE=kindest/node:v${KIND_VERSION}@sha256:${KIND_IMAGE_DIGEST} . -t kindest/node:current
 
@@ -36,7 +36,7 @@ fi
 if kind --version | grep "${KIND_VERSION}"; then
   echo "kind v${KIND_VERSION} is already present @ $(which kind)"
 else
-  sudo curl -Lo /usr/local/bin/kind -z /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
+  sudo curl -Lo /usr/local/bin/kind -z /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64
   sudo chmod +x /usr/local/bin/kind
 fi
 
