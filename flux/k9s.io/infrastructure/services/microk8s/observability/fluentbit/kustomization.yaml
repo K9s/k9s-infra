@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - release.yaml
   - repository.yaml
+  - sysctl-fs-inotify.yaml

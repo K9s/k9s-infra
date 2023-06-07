@@ -4,4 +4,3 @@ resources:
   - cluster-issuer-letsencrypt-route53-staging
   - monitoring-config
   - route53-credentials
-  - sysctl-fs-inotify.yaml
