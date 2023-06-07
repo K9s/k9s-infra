@@ -26,11 +26,14 @@ inputs = {
   storage_target = "ssd"
   storage_size   = "200G"
 
-  memory  = 32768
-  cores   = 6
+  memory  = 65536
+  balloon = 16384
+  cores   = 10
   sockets = 2
 
   use_pet_name = false
 
   network_bridge = "vmbr2"
+
+  tags = [ "mk8s" ]
 }

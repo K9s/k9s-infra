@@ -13,7 +13,7 @@ variable "target_nodes" {
 variable "storage_target" {
   type = string
 
-  default = "local-lvm"
+  default = "rbd"
 }
 
 variable "cloudimg_url" {

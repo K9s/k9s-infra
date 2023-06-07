@@ -56,6 +56,12 @@ variable "memory" {
   default = 8192
 }
 
+variable "balloon" {
+  type = number
+
+  default = 0
+}
+
 variable "cores" {
   type = number
 
@@ -90,4 +96,10 @@ variable "always_get_addons" {
   type = bool
 
   default = true
+}
+
+variable "tags" {
+  type = list
+
+  default = []
 }

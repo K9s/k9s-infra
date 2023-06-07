@@ -8,6 +8,12 @@ variable "vm_id" {
   default = ""
 }
 
+variable "tags" {
+  type = list
+
+  default = []
+}
+
 variable "clone" {
   type = string
 }
@@ -34,10 +40,23 @@ variable "memory" {
   default = 8192
 }
 
+variable "balloon" {
+  type = number
+
+  default = 0
+}
+
+
 variable "cores" {
   type = number
 
   default = 6
+}
+
+variable "numa" {
+  type = bool
+
+  default = true
 }
 
 variable "sockets" {

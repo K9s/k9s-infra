@@ -43,12 +43,15 @@ resource "proxmox_vm_qemu" "this" {
 
   # VM Options
   memory  = var.memory
+  balloon = var.balloon
+
   cores   = var.cores
+  numa = var.numa
   sockets = var.sockets
 
   # Hardware Options
   cpu    = "host"
-  scsihw = "virtio-scsi-pci"
+  scsihw = "virtio-scsi-single"
 
   # PVE Options
   target_node = var.target_node
@@ -71,6 +74,8 @@ resource "proxmox_vm_qemu" "this" {
     memory = 0
     type   = "serial0"
   }
+
+  tags = join(",", var.tags)
 
   ssh_user = local.ssh_user
 
