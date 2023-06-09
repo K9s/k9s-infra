@@ -6,7 +6,7 @@ spec:
   interval: 1m
   chart:
     spec:
-      version: 7.0.3
+      version: 7.0.4
       chart: gitlab
       sourceRef:
         kind: HelmRepository
@@ -108,7 +108,7 @@ spec:
       rbac:
         clusterWideAccess: true
         create: true
-      replicas: 3
+      replicas: 1
       concurrent: 200
       checkInterval: 5
       logFormat: json
