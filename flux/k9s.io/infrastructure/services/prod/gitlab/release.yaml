@@ -108,7 +108,7 @@ spec:
       rbac:
         clusterWideAccess: true
         create: true
-      replicas: 1
+      replicas: 5
       concurrent: 200
       checkInterval: 5
       logFormat: json
