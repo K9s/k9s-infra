@@ -129,7 +129,7 @@ spec:
             '''
 
             [runners.kubernetes]
-              request_concurrency = 10
+              request_concurrency = 1
               image = "ubuntu:22.04"
               helper_image_flavor = "ubuntu"
               namespace = "ci-builds"
