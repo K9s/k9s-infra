@@ -2,5 +2,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: reloader
 resources:
-  - https://raw.githubusercontent.com/stakater/Reloader/v0.0.104/deployments/kubernetes/reloader.yaml
+  - https://raw.githubusercontent.com/stakater/Reloader/v1.0.27/deployments/kubernetes/reloader.yaml
   - namespace.yaml

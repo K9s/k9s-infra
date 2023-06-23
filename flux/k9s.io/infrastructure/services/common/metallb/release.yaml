@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: flux-system
-      version: "3.0.12"
+      version: "3.0.12" # Upgrading > v4 requires rework to uses CRs for config see https://artifacthub.io/packages/helm/bitnami/metallb
   interval: 1h0m0s
   install:
     remediation:
