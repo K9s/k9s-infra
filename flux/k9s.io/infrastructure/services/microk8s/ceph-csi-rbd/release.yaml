@@ -9,7 +9,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: ceph-csi
-      version: "3.5.1"
+      version: "3.8.0"
   interval: 1h0m0s
   install:
     crds: Create
