@@ -70,7 +70,7 @@ spec:
             Skip_Long_Lines       On
             Skip_Empty_Lines      On
             Refresh_Interval      10
-            threaded              on
+            #threaded              on
         
         [INPUT]
             Name                  tail
@@ -84,7 +84,7 @@ spec:
             Buffer_Max_Size       1M
             Skip_Empty_Lines      On
             Refresh_Interval      10
-            threaded              on
+            #threaded              on
 
         [INPUT]
             Name                  systemd
@@ -102,7 +102,7 @@ spec:
             storage.type          memrb
             Mem_Buf_Limit         50MB
             Strip_Underscores     On
-            threaded              on
+            #threaded              on
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
       filters: |
