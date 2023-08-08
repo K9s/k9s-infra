@@ -119,7 +119,6 @@ spec:
       service:
         enabled: true
       runners:
-        privileged: true
         locked: false
         config: |
           [[runners]]
@@ -129,6 +128,7 @@ spec:
             '''
 
             [runners.kubernetes]
+              privileged = true
               request_concurrency = 1
               image = "ubuntu:22.04"
               helper_image_flavor = "ubuntu"
