@@ -95,7 +95,7 @@ spec:
     minio:
       persistence:
         storageClass: rbd
-        size: 100Gi
+        size: 1000Gi
       ingress:
         tls:
           secretName: minio-tls
