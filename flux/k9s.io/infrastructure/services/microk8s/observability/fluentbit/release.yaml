@@ -238,6 +238,7 @@ spec:
             Parser                simple-datetime-msg-1
             Parser                simple-datetime-msg-2
             Parser                simple-datetime-with-level
+            Parser                minecraft-java-msg
 
         # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
         [FILTER]
@@ -561,6 +562,13 @@ spec:
             Regex       ^(?<time>\d*-\d*-\d*.\d*:\d*:\d*\.\d*.) (?<log>.*) (?<level>FATAL|ERROR|WARN|INFO|DEBUG|TRACE|UNKNOWN)(: )?(?<msg>.*)?
             Time_Key    time
             Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+    
+        [PARSER]
+            Name        minecraft-java-msg
+            Format      regex
+            Regex       ^\[(?<time>\d*:\d*:\d*)\] \[(?<thread>.*) thread\/(?<level>.*)\]: (?<msg>.*)?
+            Time_Key    time
+            Time_Format %H:%M:%S
     
         [PARSER]
             Name                pass-through
