@@ -25,7 +25,7 @@ spec:
     csiConfig:
       - clusterID: "c83cff86-6529-46c7-974f-efb4c175a36b"
         monitors:
-        - "192.168.86.241:6789"
+        - "192.168.86.242:6789"
         - "192.168.86.243:6789"
-        - "192.168.86.240:6789"
+        - "192.168.86.244:6789"
     kubeletDir: "/var/snap/microk8s/common/var/lib/kubelet"
