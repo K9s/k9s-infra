@@ -10,5 +10,5 @@ terraform {
 inputs = {
   cloudimg_url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 
-  vm_id = 1022040
+  vm_id = 1022041
 }
