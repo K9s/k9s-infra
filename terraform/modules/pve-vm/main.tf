@@ -10,10 +10,10 @@ locals {
   ssh_user = var.os_type == "ubuntu" ? "ubuntu" : "root"
 
   connection_details = {
-    host = proxmox_vm_qemu.this.name
-    user = local.ssh_user
-    ip   = proxmox_vm_qemu.this.ssh_host
-    port = proxmox_vm_qemu.this.ssh_port
+    host   = proxmox_vm_qemu.this.name
+    user   = local.ssh_user
+    ip     = proxmox_vm_qemu.this.ssh_host
+    port   = proxmox_vm_qemu.this.ssh_port
     domain = var.domain_name
   }
 
@@ -33,7 +33,7 @@ resource "proxmox_vm_qemu" "this" {
   clone = var.clone
 
   cicustom                = local.cicustom
-  cloudinit_cdrom_storage = "local-lvm"
+  cloudinit_cdrom_storage = "ssd"
   ipconfig0               = "ip=dhcp"
   sshkeys                 = join("\n", var.ssh_keys)
   searchdomain            = var.domain_name
@@ -46,11 +46,11 @@ resource "proxmox_vm_qemu" "this" {
   balloon = var.balloon
 
   cores   = var.cores
-  numa = var.numa
+  numa    = var.numa
   sockets = var.sockets
 
   # Hardware Options
-  cpu    = "host"
+  cpu    = "x86-64-v2-AES"
   scsihw = "virtio-scsi-single"
 
   # PVE Options
@@ -98,10 +98,10 @@ resource "null_resource" "qm_restart_vm" {
   depends_on = [proxmox_vm_qemu.this]
 
   connection {
-    type        = "ssh"
-    user        = "root"
-    host        = "${var.target_node}.${var.domain_name}"
-    port        = 22
+    type = "ssh"
+    user = "root"
+    host = "${var.target_node}.${var.domain_name}"
+    port = 22
   }
 
   provisioner "remote-exec" {
