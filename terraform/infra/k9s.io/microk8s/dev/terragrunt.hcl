@@ -21,7 +21,7 @@ inputs = {
   clone                 = dependency.cloudimg.outputs.name
   vendor_storage_target = dependency.cloudinit.outputs.storage_target
 
-  num_instances = 3
+  num_instances = 4
 
   storage_target = "ssd"
   storage_size   = "200G"

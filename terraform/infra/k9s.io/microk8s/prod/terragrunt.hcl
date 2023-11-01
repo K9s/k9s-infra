@@ -21,14 +21,14 @@ inputs = {
   clone                 = dependency.cloudimg.outputs.name
   vendor_storage_target = dependency.cloudinit.outputs.storage_target
 
-  num_instances = 3
+  num_instances = 4
 
   storage_target = "ssd"
   storage_size   = "200G"
 
   memory  = 65536
   balloon = 16384
-  cores   = 10
+  cores   = 6
   sockets = 2
 
   use_pet_name = false
