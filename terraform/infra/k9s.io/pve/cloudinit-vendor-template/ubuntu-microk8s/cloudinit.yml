@@ -9,7 +9,7 @@ packages:
 runcmd:
   - timedatectl set-timezone UTC
   - systemctl start qemu-guest-agent
-  - snap install microk8s --classic --channel=1.24
+  - snap install microk8s --classic --channel=1.28/stable
   - usermod -a -G microk8s ubuntu
   - snap alias microk8s.kubectl kubectl
   - echo '#!/bin/bash' > /etc/cron.hourly/fstrim && echo fstrim -av >> /etc/cron.hourly/fstrim
