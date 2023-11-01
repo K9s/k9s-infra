@@ -106,8 +106,8 @@ module "get_kubectl_config" {
   command = "${local.ssh_base} 'sudo microk8s config'"
 }
 
-resource "local_file" "kubectl_config" {
-  sensitive_content = concat(module.get_kubectl_config.*.stdout, [""])[0]
+resource "local_sensitive_file" "kubectl_config" {
+  content = concat(module.get_kubectl_config.*.stdout, [""])[0]
 
   file_permission = "0600"
 
@@ -115,7 +115,7 @@ resource "local_file" "kubectl_config" {
 }
 
 resource "null_resource" "distribute_kubectl_config" {
-  depends_on = [local_file.kubectl_config]
+  depends_on = [local_sensitive_file.kubectl_config]
 
   count = var.skip_provisioning == false ? var.num_instances - 1 : 0
 
