@@ -82,7 +82,6 @@ resource "proxmox_vm_qemu" "this" {
   connection {
     type        = "ssh"
     user        = self.ssh_user
-    private_key = self.ssh_private_key
     host        = self.ssh_host
     port        = self.ssh_port
   }
