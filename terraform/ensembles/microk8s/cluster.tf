@@ -28,7 +28,7 @@ module "get_join_token" {
   source = "matti/resource/shell"
 
   triggers = {
-    nodes = join(",", module.vms.*.name)
+    nodes = join(",", module.vms.*.vmid)
   }
 
   command = "${local.ssh_base} 'sudo microk8s add-node -l 1200'"
@@ -36,6 +36,10 @@ module "get_join_token" {
 
 resource "null_resource" "join_cluster" {
   count = var.skip_provisioning == false ? var.num_instances - 1 : 0
+
+  triggers = {
+    nodes = join(",", module.vms.*.vmid)
+  }
 
   connection {
     type = "ssh"
@@ -76,7 +80,7 @@ resource "null_resource" "validate_nodes" {
   depends_on = [null_resource.join_cluster]
 
   triggers = {
-    nodes = join(",", module.vms.*.name)
+    nodes = join(",", module.vms.*.vmid)
   }
 
   connection {
@@ -119,6 +123,10 @@ resource "null_resource" "distribute_kubectl_config" {
 
   count = var.skip_provisioning == false ? var.num_instances - 1 : 0
 
+  triggers = {
+    nodes = join(",", module.vms.*.vmid)
+  }
+
   connection {
     type = "ssh"
     user = element(module.vms.*.connection_details.user, count.index + 1)
@@ -139,6 +147,7 @@ module "get_addons" {
 
   triggers = {
     addons = jsonencode(var.addons)
+    nodes = join(",", module.vms.*.vmid)
   }
 
   command = "${local.ssh_base} 'sudo microk8s status --format yaml'"
@@ -148,10 +157,6 @@ resource "null_resource" "process_addons" {
   for_each = var.skip_provisioning == false ? merge(local.default_addons, var.addons) : {}
 
   depends_on = [module.get_addons]
-
-  triggers = {
-    addons = jsonencode(var.addons)
-  }
 
   connection {
     type = "ssh"
@@ -180,6 +185,7 @@ module "get_addons_post" {
   triggers = {
     addons = jsonencode(var.addons)
     always = var.always_get_addons ? timestamp() : false
+    nodes = join(",", module.vms.*.vmid)
   }
 
   command = "${local.ssh_base} 'sudo microk8s status --format yaml'"
