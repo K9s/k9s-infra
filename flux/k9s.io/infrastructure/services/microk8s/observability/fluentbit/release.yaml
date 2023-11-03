@@ -654,7 +654,7 @@ spec:
                     if value == "T" then value = "TRACE" end
                     
                     --Add field if loglevel is not one of the expected values create field for troubleshooting
-                    if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN'}, value) then
+                    if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE'}, value) then
                         _record["_invalid_level"] = value
                     end
                 end
