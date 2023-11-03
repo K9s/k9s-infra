@@ -158,18 +158,18 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 raw-logs.ingest
+            Emitter_Name          raw-logs.ingest
             Match                 input.*
             Rule                  $_log_source ^. raw-logs.ingest.$TAG[1].$TAG[2] true
-            Emitter_Name          raw-logs
-        
+            
         # Structured Logs
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured-logs.ingest
+            Emitter_Name          structured-logs.ingest
             Match                 input.*
             Rule                  $_log_source ^. structured-logs.ingest.$TAG[1].$TAG[2] false
-            Emitter_Name          structured-logs
-    
+            
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.log
@@ -178,26 +178,14 @@ spec:
             Rename                MESSAGE   log
             Rename                msg       log
         
-        ### Multiline Reprocessing START
-        
         [FILTER]
-            name                  multiline
-            Alias                 structured-logs.reprocess.multiline
-            match                 structured-logs.ingest.*
-            multiline.key_content log
-            multiline.parser      cri, docker, go, python, java
-            buffer                On
-            Emitter_Name          structured-logs.reprocess.multiline
-        
-        [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record.reprocess.multiline
-            Match                 structured-logs.reprocess.multiline
-            Record                _reprocessed multiline
-            Record                _reprocessed_multiline true
-        
-        ### Multiline Reprocessing END
-        
+            Name                  modify
+            Alias                 structured-logs.rename.log.msg
+            Match                 structured-logs.*
+            Hard_rename           message   _message
+            Hard_rename           MESSAGE   _cap_message
+            Hard_rename           msg       _msg
+
         [FILTER]
             Name                  record_modifier
             Alias                 structured-logs.record._reprocessed
@@ -210,6 +198,26 @@ spec:
             Match                 structured-logs.ingest.*
             Copy                  log _raw_log
     
+        ### Multiline Processing START
+        
+        [FILTER]
+            name                  multiline
+            Alias                 structured-logs.multiline
+            Emitter_Name          structured-logs.multiline
+            match                 structured-logs.*
+            multiline.key_content log
+            multiline.parser      cri, docker, go, python, java
+            buffer                On
+        
+        [FILTER]
+            Name                  record_modifier
+            Alias                 structured-logs.record.multiline
+            Match                 structured-logs.multiline
+            Record                _reprocessed multiline
+            Record                _reprocessed_multiline true
+        
+        ### Multiline Reprocessing END
+        
         [FILTER]
             Name                  parser
             Alias                 structured-logs.parse.simple
@@ -253,15 +261,13 @@ spec:
         # If logfmt ^ fails to parse (resulting in log field remaining) rename that field to prevent loop during reprocessing
         [FILTER]
             Name                  modify
-            Alias                 structured-logs.rename._log
-            Name                  modify
+            Alias                 structured-logs.reprocess.logfmt.rename.log
             Match                 structured-logs.reprocess.logfmt
             Hard_rename           log         _log
     
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.level
-            Name                  modify
             Match                 structured-logs.*
             Rename                severity    level
             Rename                log_level   level
@@ -271,7 +277,6 @@ spec:
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.es
-            Name                  modify
             Match                 structured-logs.*
             Rename                @timestamp  log_timestamp
             Rename                _id         log_id
@@ -295,12 +300,13 @@ spec:
             type_array_key        tags
         
         ### Reprocessing START
+        
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured-logs.reprocess.logfmt
+            Emitter_Name          structured-logs.reprocess.logfmt
             Match                 structured-logs.*
             Rule                  $log ^\S*=.*=.*$ structured-logs.reprocess.logfmt false
-            Emitter_Name          structured-logs.reprocess.logfmt
         
         [FILTER]
             Name                  record_modifier
@@ -312,9 +318,9 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured-logs.reprocess.log
+            Emitter_Name          structured-logs.reprocess.log
             Match                 structured-logs.ingest.*
             Rule                  $log ^. structured-logs.reprocess.log false
-            Emitter_Name          structured-logs.reprocess.log
         
         [FILTER]
             Name                  record_modifier
@@ -326,9 +332,9 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured-logs.reprocess.msg
+            Emitter_Name          structured-logs.reprocess.msg
             Match                 structured-logs.ingest.*
             Rule                  $msg ^. structured-logs.reprocess.msg false
-            Emitter_Name          structured-logs.reprocess.msg
         
         [FILTER]
             Name                  record_modifier
@@ -374,14 +380,17 @@ spec:
             Match                 structured-logs.*
             Rename                msg         message
             Rename                log         message
+            Copy                  _msg        message
+            Copy                  _log        message
         
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.misc
             Match                 structured-logs.*
             Rename                uri           url
-            Rename                time          timestamp
+            Rename                t             timestamp
             Rename                ts            timestamp
+            Rename                time          timestamp
             Rename                log_timestamp timestamp
             Rename                status        statuscode
             Rename                code          statuscode
@@ -404,19 +413,19 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 final-structured-logs
+            Emitter_Name          final-structured-logs
             Emitter_Storage.type  filesystem
             Match                 structured-logs.*
             Rule                  $_log_source ^. final.structured-logs false
-            Emitter_Name          final-structured-logs
         
         [FILTER]
             Name                  rewrite_tag
-            Alias                 final.raw-log
+            Alias                 final.raw-logs
+            Emitter_Name          final-raw-logs
             Emitter_Storage.type  filesystem
             Match                 raw-logs.*
             Rule                  $_log_source ^. final.raw-logs false
-            Emitter_Name          final-raw-logs
-        
+            
         #[FILTER]
         #    Name    grep
         #    Match   *
@@ -464,6 +473,27 @@ spec:
       ## https://docs.fluentbit.io/manual/pipeline/parsers
       customParsers: |
         [PARSER]
+            Name        simple-datetime-log-with-level-and-optional-msg
+            Format      regex
+            Regex       ^(?<time>\d*-\d*-\d*.\d*:\d*:\d*\.\d*.) (?<log>.*) (?<level>FATAL|ERROR|WARN|INFO|DEBUG|TRACE|UNKNOWN)(: )?(?<msg>.*)?
+            Time_Key    time
+            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+            
+        [PARSER]
+            Name        docker-daemon
+            Format      regex
+            Regex       (^\[(?<container>.*)] )?time="(?<time>[^ ]*)" level=(?<level>[^ ]*) (?<log>.*)
+            Time_Key    time
+            Time_Format %Y-%m-%dT%H:%M:%S
+
+        [PARSER]
+            Name        cri
+            Format      regex
+            Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+            Time_Key    time
+            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+            
+        [PARSER]
             Name        apache
             Format      regex
             Regex       ^(?<host>[^ ]*) (?<ident>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
@@ -505,13 +535,6 @@ spec:
             Name        kibana-logs
             Format      regex
             Regex       ^(?<method>POST|GET|PUT|DELETE) (?<endpoint>[^ ]*) (?<code>[^ ]*) (?<latency_ms>[^ ]*)ms| \- (?<size>\d*.\d*|\d*)(?<size_unit>[^ ]*)$
-        
-        [PARSER]
-            Name        docker-daemon
-            Format      regex
-            Regex       (^\[(?<container>.*)] )?time="(?<time>[^ ]*)" level=(?<level>[^ ]*) (?<log>.*)
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S
     
         [PARSER]
             # https://rubular.com/r/KKkEvIYKEvj13a
@@ -520,13 +543,6 @@ spec:
             Regex       ^(?<severity>W|I|E|F)+(?<code>\d{4})+\s(?<time>\d*:\d*:\d*\.\d*)\s*(?<pid>[^\]]*)\s(?<file>\w*\.\w*):(?<line>\d*)\](?<msg>.*)$
             Time_Key    time
             Time_Format %H:%M:%S.%L
-    
-        [PARSER]
-            Name        cri
-            Format      regex
-            Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
     
         [PARSER]
             Name        containerd
@@ -555,13 +571,6 @@ spec:
             Regex       ^[\[]?(?<time>\d*\/\d*\/\d* \d*:\d*:\d*)[\]]?(?<msg>.*)$
             Time_Key    time
             Time_Format %Y/%m/%d %H:%M:%S
-        
-        [PARSER]
-            Name        simple-datetime-log-with-level-and-optional-msg
-            Format      regex
-            Regex       ^(?<time>\d*-\d*-\d*.\d*:\d*:\d*\.\d*.) (?<log>.*) (?<level>FATAL|ERROR|WARN|INFO|DEBUG|TRACE|UNKNOWN)(: )?(?<msg>.*)?
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
     
         [PARSER]
             Name        minecraft-java-msg
