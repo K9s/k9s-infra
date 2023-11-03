@@ -157,19 +157,19 @@ spec:
         # Raw Logs
         [FILTER]
             Name                  rewrite_tag
-            Alias                 raw-logs.ingest
+            Alias                 raw-logs
+            Emitter_Name          raw-logs
             Match                 input.*
             Rule                  $_log_source ^. raw-logs.ingest.$TAG[1].$TAG[2] true
-            Emitter_Name          raw-logs
-        
+            
         # Structured Logs
         [FILTER]
             Name                  rewrite_tag
-            Alias                 structured-logs.ingest
+            Alias                 structured-logs
+            Emitter_Name          structured-logs
             Match                 input.*
             Rule                  $_log_source ^. structured-logs.ingest.$TAG[1].$TAG[2] false
-            Emitter_Name          structured-logs
-    
+            
         [FILTER]
             Name                  modify
             Alias                 structured-logs.rename.log
@@ -183,7 +183,7 @@ spec:
         [FILTER]
             name                  multiline
             Alias                 structured-logs.reprocess.multiline
-            match                 structured-logs.ingest.*
+            match                 structured-logs.*
             multiline.key_content log
             multiline.parser      cri, docker, go, python, java
             buffer                On
@@ -298,9 +298,9 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured-logs.reprocess.logfmt
+            Emitter_Name          structured-logs.reprocess.logfmt
             Match                 structured-logs.*
             Rule                  $log ^\S*=.*=.*$ structured-logs.reprocess.logfmt false
-            Emitter_Name          structured-logs.reprocess.logfmt
         
         [FILTER]
             Name                  record_modifier
@@ -312,9 +312,9 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured-logs.reprocess.log
+            Emitter_Name          structured-logs.reprocess.log
             Match                 structured-logs.ingest.*
             Rule                  $log ^. structured-logs.reprocess.log false
-            Emitter_Name          structured-logs.reprocess.log
         
         [FILTER]
             Name                  record_modifier
@@ -326,9 +326,9 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured-logs.reprocess.msg
+            Emitter_Name          structured-logs.reprocess.msg
             Match                 structured-logs.ingest.*
             Rule                  $msg ^. structured-logs.reprocess.msg false
-            Emitter_Name          structured-logs.reprocess.msg
         
         [FILTER]
             Name                  record_modifier
@@ -404,19 +404,19 @@ spec:
         [FILTER]
             Name                  rewrite_tag
             Alias                 final-structured-logs
+            Emitter_Name          final-structured-logs
             Emitter_Storage.type  filesystem
             Match                 structured-logs.*
             Rule                  $_log_source ^. final.structured-logs false
-            Emitter_Name          final-structured-logs
         
         [FILTER]
             Name                  rewrite_tag
-            Alias                 final.raw-log
+            Alias                 final.raw-logs
+            Emitter_Name          final-raw-logs
             Emitter_Storage.type  filesystem
             Match                 raw-logs.*
             Rule                  $_log_source ^. final.raw-logs false
-            Emitter_Name          final-raw-logs
-        
+            
         #[FILTER]
         #    Name    grep
         #    Match   *
