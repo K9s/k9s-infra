@@ -464,6 +464,27 @@ spec:
       ## https://docs.fluentbit.io/manual/pipeline/parsers
       customParsers: |
         [PARSER]
+            Name        simple-datetime-log-with-level-and-optional-msg
+            Format      regex
+            Regex       ^(?<time>\d*-\d*-\d*.\d*:\d*:\d*\.\d*.) (?<log>.*) (?<level>FATAL|ERROR|WARN|INFO|DEBUG|TRACE|UNKNOWN)(: )?(?<msg>.*)?
+            Time_Key    time
+            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+            
+        [PARSER]
+            Name        docker-daemon
+            Format      regex
+            Regex       (^\[(?<container>.*)] )?time="(?<time>[^ ]*)" level=(?<level>[^ ]*) (?<log>.*)
+            Time_Key    time
+            Time_Format %Y-%m-%dT%H:%M:%S
+
+        [PARSER]
+            Name        cri
+            Format      regex
+            Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+            Time_Key    time
+            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+            
+        [PARSER]
             Name        apache
             Format      regex
             Regex       ^(?<host>[^ ]*) (?<ident>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
@@ -505,13 +526,6 @@ spec:
             Name        kibana-logs
             Format      regex
             Regex       ^(?<method>POST|GET|PUT|DELETE) (?<endpoint>[^ ]*) (?<code>[^ ]*) (?<latency_ms>[^ ]*)ms| \- (?<size>\d*.\d*|\d*)(?<size_unit>[^ ]*)$
-        
-        [PARSER]
-            Name        docker-daemon
-            Format      regex
-            Regex       (^\[(?<container>.*)] )?time="(?<time>[^ ]*)" level=(?<level>[^ ]*) (?<log>.*)
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S
     
         [PARSER]
             # https://rubular.com/r/KKkEvIYKEvj13a
@@ -520,13 +534,6 @@ spec:
             Regex       ^(?<severity>W|I|E|F)+(?<code>\d{4})+\s(?<time>\d*:\d*:\d*\.\d*)\s*(?<pid>[^\]]*)\s(?<file>\w*\.\w*):(?<line>\d*)\](?<msg>.*)$
             Time_Key    time
             Time_Format %H:%M:%S.%L
-    
-        [PARSER]
-            Name        cri
-            Format      regex
-            Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
     
         [PARSER]
             Name        containerd
@@ -555,13 +562,6 @@ spec:
             Regex       ^[\[]?(?<time>\d*\/\d*\/\d* \d*:\d*:\d*)[\]]?(?<msg>.*)$
             Time_Key    time
             Time_Format %Y/%m/%d %H:%M:%S
-        
-        [PARSER]
-            Name        simple-datetime-log-with-level-and-optional-msg
-            Format      regex
-            Regex       ^(?<time>\d*-\d*-\d*.\d*:\d*:\d*\.\d*.) (?<log>.*) (?<level>FATAL|ERROR|WARN|INFO|DEBUG|TRACE|UNKNOWN)(: )?(?<msg>.*)?
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
     
         [PARSER]
             Name        minecraft-java-msg
