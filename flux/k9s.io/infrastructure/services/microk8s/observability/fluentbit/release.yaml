@@ -212,25 +212,25 @@ spec:
             Match                 structured-logs.*
             Hard_copy             log _log_last
     
-        ### Multiline Processing START
-        
-        [FILTER]
-            name                  multiline
-            Alias                 structured-logs.multiline
-            Emitter_Name          structured-logs.multiline
-            match                 structured-logs.*
-            multiline.key_content log
-            multiline.parser      cri, docker, go, python, java
-            buffer                On
-        
-        [FILTER]
-            Name                  modify
-            Alias                 structured-logs.modify.multiline
-            Match                 structured-logs.multiline
-            Set                   _reprocessed multiline
-            Set                   _reprocessed_multiline true
-        
-        ### Multiline Reprocessing END
+        #### Multiline Processing START
+        #
+        #[FILTER]
+        #    name                  multiline
+        #    Alias                 structured-logs.multiline
+        #    Emitter_Name          structured-logs.multiline
+        #    match                 structured-logs.*
+        #    multiline.key_content log
+        #    multiline.parser      cri, docker, go, python, java
+        #    buffer                On
+        #
+        #[FILTER]
+        #    Name                  modify
+        #    Alias                 structured-logs.modify.multiline
+        #    Match                 structured-logs.multiline
+        #    Set                   _reprocessed multiline
+        #    Set                   _reprocessed_multiline true
+        #
+        #### Multiline Reprocessing END
         
         [FILTER]
             Name                  parser
