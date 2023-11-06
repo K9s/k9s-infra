@@ -408,6 +408,12 @@ spec:
             Rename                host          hostname
             Rename                uname         name
             
+        [FILTER]
+            Name                  modify
+            Alias                 remove.flb_processed
+            Match                 *
+            Remove                _flb_processed
+        
         #[FILTER]
         #    Name    grep
         #    Match   *
