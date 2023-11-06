@@ -160,7 +160,7 @@ spec:
             Alias                 raw-logs.ingest
             Emitter_Name          raw-logs.ingest
             Match                 input.*
-            Rule                  $_log_source ^. raw-logs.ingest.$TAG[1].$TAG[2] true
+            Rule                  $_flb_processed ^. raw-logs.ingest.$TAG[1].$TAG[2] true
             
         # Structured Logs
         [FILTER]
@@ -168,7 +168,7 @@ spec:
             Alias                 structured-logs.ingest
             Emitter_Name          structured-logs.ingest
             Match                 input.*
-            Rule                  $_log_source ^. structured-logs.ingest.$TAG[1].$TAG[2] false
+            Rule                  $_flb_processed ^. structured-logs.ingest.$TAG[1].$TAG[2] false
             
         [FILTER]
             Name                  modify
@@ -595,7 +595,7 @@ spec:
         function flb_tags(tag, timestamp, record)
           if not record["_flb_tags"] then 
             record["_flb_tags"] = {}
-            record["_log_source"] = tag
+            record["_flb_processed"] = yes
           end
           table.insert(record["_flb_tags"], tag)
           return 2, timestamp, record
