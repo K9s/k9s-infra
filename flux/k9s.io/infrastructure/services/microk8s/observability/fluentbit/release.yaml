@@ -187,10 +187,10 @@ spec:
             Hard_rename           msg       _msg
 
         [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record._reprocessed
+            Name                  modify
+            Alias                 structured-logs.modify._reprocessed
             Match                 structured-logs.ingest.*
-            Record                _reprocessed no
+            Set                   _reprocessed no
         
         [FILTER]
             Name                  modify
@@ -216,11 +216,11 @@ spec:
             buffer                On
         
         [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record.multiline
+            Name                  modify
+            Alias                 structured-logs.modify.multiline
             Match                 structured-logs.multiline
-            Record                _reprocessed multiline
-            Record                _reprocessed_multiline true
+            Set                   _reprocessed multiline
+            Set                   _reprocessed_multiline true
         
         ### Multiline Reprocessing END
         
@@ -315,11 +315,11 @@ spec:
             Rule                  $log ^\S*=.*=.*$ structured-logs.reprocess.logfmt false
         
         [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record.reprocess.logfmt
+            Name                  modify
+            Alias                 structured-logs.modify.reprocess.logfmt
             Match                 structured-logs.reprocess.logfmt
-            Record                _reprocessed logfmt
-            Record                _reprocessed_logfmt true
+            Set                   _reprocessed logfmt
+            Set                   _reprocessed_logfmt true
 
         [FILTER]
             Name                  rewrite_tag
@@ -329,11 +329,11 @@ spec:
             Rule                  $log ^. structured-logs.reprocess.log false
         
         [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record.reprocess.log
+            Name                  modify
+            Alias                 structured-logs.modify.reprocess.log
             Match                 structured-logs.reprocess.log
-            Record                _reprocessed log
-            Record                _reprocessed_log true
+            Set                   _reprocessed log
+            Set                   _reprocessed_log true
         
         [FILTER]
             Name                  rewrite_tag
@@ -343,11 +343,11 @@ spec:
             Rule                  $msg ^. structured-logs.reprocess.msg false
         
         [FILTER]
-            Name                  record_modifier
-            Alias                 structured-logs.record.reprocess.msg
+            Name                  modify
+            Alias                 structured-logs.modify.reprocess.msg
             Match                 structured-logs.reprocess.msg
-            Record                _reprocessed msg
-            Record                _reprocessed_msg true
+            Set                   _reprocessed msg
+            Set                   _reprocessed_msg true
         
         ### Reprocessing END
 
