@@ -595,7 +595,7 @@ spec:
         function flb_tags(tag, timestamp, record)
           if not record["_flb_tags"] then 
             record["_flb_tags"] = {}
-            record["_flb_processed"] = yes
+            record["_flb_processed"] = "yes"
           end
           table.insert(record["_flb_tags"], tag)
           return 2, timestamp, record
