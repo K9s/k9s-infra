@@ -153,14 +153,6 @@ spec:
             Operation             lift
             Nested_under          kubernetes_annotations
             Add_prefix            kubernetes_annotations/
-        
-        [FILTER]
-            Name                  lua
-            Alias                 input.log_source
-            Match                 input.*
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  log_source
-            type_array_key        tags
     
         # Raw Logs
         [FILTER]
@@ -600,13 +592,11 @@ spec:
             end
         end
         
-        function log_source(tag, timestamp, record)
-          record["_log_source"] = tag
-          return 2, timestamp, record
-        end
-        
         function flb_tags(tag, timestamp, record)
-          if not record["_flb_tags"] then record["_flb_tags"] = {} end
+          if not record["_flb_tags"] then 
+            record["_flb_tags"] = {}
+            record["_log_source"] = tag
+          end
           table.insert(record["_flb_tags"], tag)
           return 2, timestamp, record
         end
