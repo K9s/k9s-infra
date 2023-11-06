@@ -206,8 +206,8 @@ spec:
         
         [FILTER]
             Name                  lua
-            Alias                 structured-logs.flb_tags
-            Match                 structured-logs.*
+            Alias                 flb_tags
+            Match                 *
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  flb_tags
             type_array_key        tags
