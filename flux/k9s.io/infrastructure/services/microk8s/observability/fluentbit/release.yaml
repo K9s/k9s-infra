@@ -49,7 +49,6 @@ spec:
             HC_Period               5
             storage.metrics         true
             storage.path            /var/log/flb_buffer
-            storage.max_chunks_up   20
             storage.pause_on_chunks_overlimit On
             scheduler.cap           600
 
@@ -102,7 +101,6 @@ spec:
             storage.type          memrb
             Mem_Buf_Limit         50MB
             Strip_Underscores     On
-            #threaded              on
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
       filters: |
@@ -157,68 +155,62 @@ spec:
         # Raw Logs
         [FILTER]
             Name                  rewrite_tag
-            Alias                 rl.ingest
-            Emitter_Name          rl.ingest
+            Alias                 raw.ingest
+            Emitter_Name          raw.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. rl.ingest.$TAG[1].$TAG[2] true
+            Rule                  $_flb_processed ^. raw.ingest.$TAG[1].$TAG[2] true
             
         # Structured Logs
         [FILTER]
             Name                  rewrite_tag
-            Alias                 sl.ingest
-            Emitter_Name          sl.ingest
+            Alias                 structured.ingest
+            Emitter_Name          structured.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. sl.ingest.$TAG[1].$TAG[2] false
+            Rule                  $_flb_processed ^. structured.ingest.$TAG[1].$TAG[2] false
             
         [FILTER]
             Name                  modify
-            Alias                 sl.rename.log
-            Match                 sl.*
+            Alias                 structured.rename.log
+            Match                 structured.*
             Rename                message   log
             Rename                MESSAGE   log
             Rename                msg       log
         
         [FILTER]
             Name                  modify
-            Alias                 sl.rename.log.msg
-            Match                 sl.*
+            Alias                 structured.rename.log.msg
+            Match                 structured.*
             Hard_rename           message   _message
             Hard_rename           MESSAGE   _cap_message
             Hard_rename           msg       _msg
 
         [FILTER]
             Name                  modify
-            Alias                 sl.modify._reprocessed
-            Match                 sl.ingest.*
+            Alias                 structured.modify._reprocessed
+            Match                 structured.ingest.*
             Set                   _reprocessed no
         
         [FILTER]
             Name                  modify
-            Alias                 sl.copy._raw_log
-            Match                 sl.ingest.*
+            Alias                 structured.copy._raw_log
+            Match                 structured.ingest.*
             Copy                  log _raw_log
-        
-        [FILTER]
-            Name                  modify
-            Alias                 sl.copy._log_last
-            Match                 sl.*
-            Hard_copy             log _log_last
     
         #### Multiline Processing START
         #
         #[FILTER]
         #    name                  multiline
-        #    Alias                 sl.multiline
-        #    Emitter_Name          sl.multiline
-        #    match                 sl.*
+        #    Alias                 structured.multiline
+        #    Emitter_Name          structured.multiline
+        #    match                 structured.*
         #    multiline.key_content log
         #    multiline.parser      cri, docker, go, python, java
         #    buffer                On
         #
         #[FILTER]
         #    Name                  modify
-        #    Alias                 sl.modify.multiline
-        #    Match                 sl.multiline
+        #    Alias                 structured.modify.multiline
+        #    Match                 structured.multiline
         #    Set                   _reprocessed multiline
         #    Set                   _reprocessed_multiline true
         #
@@ -226,8 +218,8 @@ spec:
         
         [FILTER]
             Name                  parser
-            Alias                 sl.parse.simple
-            Match                 sl.*
+            Alias                 structured.parse.simple
+            Match                 structured.*
             Key_Name              log
             Reserve_Data          On
             Preserve_Key          Off
@@ -235,8 +227,8 @@ spec:
     
         [FILTER]
             Name                  parser
-            Alias                 sl.parse
-            Match                 sl.*
+            Alias                 structured.parse
+            Match                 structured.*
             Key_Name              log
             Reserve_Data          On
             Preserve_Key          Off
@@ -257,8 +249,8 @@ spec:
         # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
         [FILTER]
             Name                  parser
-            Alias                 sl.parse.logfmt
-            Match                 sl.reprocess.logfmt
+            Alias                 structured.parse.logfmt
+            Match                 structured.reprocess.logfmt
             Key_Name              log
             Reserve_Data          On
             Preserve_Key          Off
@@ -267,14 +259,14 @@ spec:
         # If logfmt ^ fails to parse (resulting in log field remaining) rename that field to prevent loop during reprocessing
         [FILTER]
             Name                  modify
-            Alias                 sl.reprocess.logfmt.rename.log
-            Match                 sl.reprocess.logfmt
+            Alias                 structured.reprocess.logfmt.rename.log
+            Match                 structured.reprocess.logfmt
             Hard_rename           log         _log
     
         [FILTER]
             Name                  modify
-            Alias                 sl.rename.level
-            Match                 sl.*
+            Alias                 structured.rename.level
+            Match                 structured.*
             Rename                severity    level
             Rename                log_level   level
             Rename                log.level   level
@@ -282,16 +274,16 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 sl.rename.es
-            Match                 sl.*
+            Alias                 structured.rename.es
+            Match                 structured.*
             Rename                @timestamp  log_timestamp
             Rename                _id         log_id
             Rename                _index      log_index
     
         [FILTER]
             Name                  parser
-            Alias                 sl.parse.pass-through
-            Match                 sl.*
+            Alias                 structured.parse.pass-through
+            Match                 structured.*
             Key_Name              msg
             Reserve_Data          On
             Preserve_Key          Off
@@ -299,100 +291,132 @@ spec:
     
         [FILTER]
             Name                  lua
-            Alias                 sl.normalize
-            Match                 sl.*
+            Alias                 structured.normalize
+            Match                 structured.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
             type_array_key        tags
         
-        ### Reprocessing START
+        # Reprocessing Start
         
-        [FILTER]
-            Name                  rewrite_tag
-            Alias                 sl.reprocess.logfmt
-            Emitter_Name          sl.reprocess.logfmt
-            Match                 sl.*
-            Rule                  $log ^\S*=.*=.*$ sl.reprocess.logfmt false
+        ## Set reprocessing status records
         
         [FILTER]
             Name                  modify
-            Alias                 sl.modify.reprocess.logfmt
-            Match                 sl.reprocess.logfmt
+            Alias                 structured.modify.reprocess.logfmt
+            Match                 structured.reprocess.logfmt
             Set                   _reprocessed logfmt
             Set                   _reprocessed_logfmt true
-
-        [FILTER]
-            Name                  rewrite_tag
-            Alias                 sl.reprocess.log
-            Emitter_Name          sl.reprocess.log
-            Match                 sl.ingest.*
-            Rule                  $log ^. sl.reprocess.log false
         
         [FILTER]
             Name                  modify
-            Alias                 sl.modify.reprocess.log
-            Match                 sl.reprocess.log
+            Alias                 structured.modify.reprocess.log
+            Match                 structured.reprocess.log
             Set                   _reprocessed log
             Set                   _reprocessed_log true
         
         [FILTER]
-            Name                  rewrite_tag
-            Alias                 sl.reprocess.msg
-            Emitter_Name          sl.reprocess.msg
-            Match                 sl.ingest.*
-            Rule                  $msg ^. sl.reprocess.msg false
-        
-        [FILTER]
             Name                  modify
-            Alias                 sl.modify.reprocess.msg
-            Match                 sl.reprocess.msg
+            Alias                 structured.modify.reprocess.msg
+            Match                 structured.reprocess.msg
             Set                   _reprocessed msg
             Set                   _reprocessed_msg true
         
-        ### Reprocessing END
+        ## Reprocessing debug
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.remove._log_.log
+            Match                 structured.*
+            Remove                _log_remaining
+            Condition             Key_does_not_exist    log
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.copy._log_remaining.log
+            Match                 structured.*
+            Hard_copy             log _log_remaining
+            Condition             Key_exists    log
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.remove._log_remaining.log
+            Match                 structured.*
+            Remove                _log_remaining
+            Condition             Key_exists    _reprocessed_msg
+        
+        [FILTER]
+            Name                  lua
+            Alias                 final.structured.lua.unparsed
+            Match                 final.structured
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  unparsed_log
+        
+        ## Reprocessing rewrite tags
+        
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 structured.reprocess.logfmt
+            Emitter_Name          structured.reprocess.logfmt
+            Match                 structured.*
+            Rule                  $log ^\S*=.*=.*$ structured.reprocess.logfmt false
+
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 structured.reprocess.log
+            Emitter_Name          structured.reprocess.log
+            Match                 structured.ingest.*
+            Rule                  $log ^. structured.reprocess.log false
+        
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 structured.reprocess.msg
+            Emitter_Name          structured.reprocess.msg
+            Match                 structured.ingest.*
+            Rule                  $msg ^. structured.reprocess.msg false
+        
+        # Reprocessing END
 
         [FILTER]
             Name                  nest
-            Alias                 sl.lift.httprequest
-            Match                 sl.*
+            Alias                 structured.lift.httprequest
+            Match                 structured.*
             Operation             lift
             Nested_under          httprequest
         
         [FILTER]
             Name                  nest
-            Alias                 sl.lift.req
-            Match                 sl.*
+            Alias                 structured.lift.req
+            Match                 structured.*
             Operation             lift
             Nested_under          req
         
         [FILTER]
             Name                  nest
-            Alias                 sl.lift.res
-            Match                 sl.*
+            Alias                 structured.lift.res
+            Match                 structured.*
             Operation             lift
             Nested_under          res
 
         [FILTER]
             Name                  lua
-            Alias                 sl.normalize.final
-            Match                 sl.*
+            Alias                 structured.normalize.final
+            Match                 structured.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
             type_array_key        tags
 
         [FILTER]
             Name                  modify
-            Alias                 sl.rename.message
-            Match                 sl.*
+            Alias                 structured.rename.message
+            Match                 structured.*
             Rename                msg         message
             Rename                log         message
-            Copy                  _msg        message
-            Copy                  _log        message
         
         [FILTER]
             Name                  modify
-            Alias                 sl.rename.misc
-            Match                 sl.*
+            Alias                 structured.rename.misc
+            Match                 structured.*
             Rename                uri           url
             Rename                t             timestamp
             Rename                ts            timestamp
@@ -409,6 +433,22 @@ spec:
             Rename                uname         name
             
         [FILTER]
+            Name                  rewrite_tag
+            Alias                 final-structured
+            Emitter_Name          final-structured
+            Emitter_Storage.type  filesystem
+            Match                 structured.*
+            Rule                  $_flb_processed ^. final.structured false
+        
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 final-raw
+            Emitter_Name          final-raw
+            Emitter_Storage.type  filesystem
+            Match                 raw.*
+            Rule                  $_flb_processed ^. final.raw false
+        
+        [FILTER]
             Name                  modify
             Alias                 remove.flb_processed
             Match                 *
@@ -424,9 +464,9 @@ spec:
       outputs: |
         [OUTPUT]
             Name                      es
-            Alias                     out.es.structured-logs
+            Alias                     out.es.structured
             Host                      logs-es-http
-            Match                     sl.*
+            Match                     final.structured
             Index                     logs-structured
             Write_Operation           upsert
             Generate_ID               On
@@ -442,9 +482,9 @@ spec:
     
         [OUTPUT]
             Name                      es
-            Alias                     out.es.raw-logs
+            Alias                     out.es.raw
             Host                      logs-es-http
-            Match                     rl.*
+            Match                     final.raw
             Index                     logs-raw
             Write_Operation           upsert
             Generate_ID               On
@@ -596,6 +636,19 @@ spec:
             else
                 return t
             end
+        end
+        
+        function unparsed_log(tag, timestamp, record)
+          if record["_log_remaining"] then
+            if record["_log_remaining"] == record["_raw_log"] then
+              record["_log_remaining"] = "_raw_log"
+              record["_reprocessed"] = "failed"
+            else
+              record["_reprocessed"] = "partial"
+            end
+          end
+        
+          return 2, timestamp, record
         end
         
         function flb_tags(tag, timestamp, record)
