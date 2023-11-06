@@ -415,22 +415,6 @@ spec:
             Rename                err           error
             Rename                host          hostname
             Rename                uname         name
-        
-        [FILTER]
-            Name                  rewrite_tag
-            Alias                 final-structured-logs
-            Emitter_Name          final-structured-logs
-            Emitter_Storage.type  filesystem
-            Match                 structured-logs.*
-            Rule                  $_log_source ^. final.structured-logs false
-        
-        [FILTER]
-            Name                  rewrite_tag
-            Alias                 final.raw-logs
-            Emitter_Name          final-raw-logs
-            Emitter_Storage.type  filesystem
-            Match                 raw-logs.*
-            Rule                  $_log_source ^. final.raw-logs false
             
         #[FILTER]
         #    Name    grep
@@ -444,7 +428,7 @@ spec:
             Name                      es
             Alias                     es.structured-logs
             Host                      logs-es-http
-            Match                     final.structured-logs
+            Match                     structured-logs.*
             Index                     logs-structured
             Write_Operation           upsert
             Generate_ID               On
@@ -462,7 +446,7 @@ spec:
             Name                      es
             Alias                     es.raw-logs
             Host                      logs-es-http
-            Match                     final.raw-logs
+            Match                     raw-logs.*
             Index                     logs-raw
             Write_Operation           upsert
             Generate_ID               On
