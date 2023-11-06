@@ -197,6 +197,12 @@ spec:
             Alias                 structured-logs.copy._raw_log
             Match                 structured-logs.ingest.*
             Copy                  log _raw_log
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured-logs.copy._log_last
+            Match                 structured-logs.*
+            Hard_copy             log _log_last
     
         ### Multiline Processing START
         
@@ -635,7 +641,7 @@ spec:
         
             for field, value in pairs(record) do
                 --Normalize field value and ensure basic types are preserved
-                if type(value) == "string" then 
+                if type(value) == "string" then
                    value = all_trim(value)
         
                    number = tonumber(value)
