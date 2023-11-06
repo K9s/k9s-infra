@@ -57,8 +57,8 @@ spec:
       inputs: |
         [INPUT]
             Name                  tail
-            Alias                 input.kube.cluster
-            Tag                   input.kube.cluster.*
+            Alias                 in.kube.cluster
+            Tag                   in.kube.cluster.*
             Path                  /var/log/containers/*.log
             Parser                cri
             multiline.parser      docker, cri
@@ -74,8 +74,8 @@ spec:
         
         [INPUT]
             Name                  tail
-            Alias                 input.host.auth
-            Tag                   input.host.auth.*
+            Alias                 in.host.auth
+            Tag                   in.host.auth.*
             Path                  /var/log/auth.log
             DB                    /var/log/flb_auth_log.db
             storage.type          memrb
@@ -88,8 +88,8 @@ spec:
 
         [INPUT]
             Name                  systemd
-            Alias                 input.host.systemd
-            Tag                   input.host.systemd.*
+            Alias                 in.host.systemd
+            Tag                   in.host.systemd.*
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-kicker.service 
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-cluster-agent.service
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-containerd.service
@@ -118,11 +118,11 @@ spec:
         [FILTER]
             Name                  kubernetes
             Alias                 kubernetes
-            Match                 input.kube.cluster.*
+            Match                 in.kube.cluster.*
             Kube_URL              https://kubernetes.default.svc:443
             Kube_CA_File          /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
             Kube_Token_File       /var/run/secrets/kubernetes.io/serviceaccount/token
-            Kube_Tag_Prefix       input.kube.cluster.var.log.containers.
+            Kube_Tag_Prefix       in.kube.cluster.var.log.containers.
             Merge_Log             Off
             Buffer_Size           0
             K8S-Logging.Parser    On
@@ -133,7 +133,7 @@ spec:
         [FILTER]
             Name                  nest
             Alias                 lift.kubernetes
-            Match                 input.kube.cluster.*
+            Match                 in.kube.cluster.*
             Operation             lift
             Nested_under          kubernetes
             Add_prefix            kubernetes_
@@ -141,7 +141,7 @@ spec:
         [FILTER]
             Name                  nest
             Alias                 lift.kubernetes.labels
-            Match                 input.kube.cluster.*
+            Match                 in.kube.cluster.*
             Operation             lift
             Nested_under          kubernetes_labels
             Add_prefix            kubernetes_labels/
@@ -149,7 +149,7 @@ spec:
         [FILTER]
             Name                  nest
             Alias                 lift.kubernetes.annotations
-            Match                 input.kube.cluster.*
+            Match                 in.kube.cluster.*
             Operation             lift
             Nested_under          kubernetes_annotations
             Add_prefix            kubernetes_annotations/
@@ -159,7 +159,7 @@ spec:
             Name                  rewrite_tag
             Alias                 rl.ingest
             Emitter_Name          rl.ingest
-            Match                 input.*
+            Match                 in.*
             Rule                  $_flb_processed ^. rl.ingest.$TAG[1].$TAG[2] true
             
         # Structured Logs
@@ -167,7 +167,7 @@ spec:
             Name                  rewrite_tag
             Alias                 sl.ingest
             Emitter_Name          sl.ingest
-            Match                 input.*
+            Match                 in.*
             Rule                  $_flb_processed ^. sl.ingest.$TAG[1].$TAG[2] false
             
         [FILTER]
@@ -424,7 +424,7 @@ spec:
       outputs: |
         [OUTPUT]
             Name                      es
-            Alias                     es.structured-logs
+            Alias                     out.es.structured-logs
             Host                      logs-es-http
             Match                     sl.*
             Index                     logs-structured
@@ -442,7 +442,7 @@ spec:
     
         [OUTPUT]
             Name                      es
-            Alias                     es.raw-logs
+            Alias                     out.es.raw-logs
             Host                      logs-es-http
             Match                     rl.*
             Index                     logs-raw
