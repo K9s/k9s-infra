@@ -106,6 +106,14 @@ spec:
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
       filters: |
+        [FILTER]
+            Name                  lua
+            Alias                 flb_tags
+            Match                 *
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  flb_tags
+            type_array_key        tags
+        
         # Kubernetes
         [FILTER]
             Name                  kubernetes
@@ -203,14 +211,6 @@ spec:
             Alias                 structured-logs.copy._log_last
             Match                 structured-logs.*
             Hard_copy             log _log_last
-        
-        [FILTER]
-            Name                  lua
-            Alias                 flb_tags
-            Match                 *
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  flb_tags
-            type_array_key        tags
     
         ### Multiline Processing START
         
