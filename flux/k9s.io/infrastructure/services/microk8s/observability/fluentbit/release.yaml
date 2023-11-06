@@ -148,7 +148,7 @@ spec:
         
         [FILTER]
             Name                  lua
-            Alias                 record.log_source
+            Alias                 input.log_source
             Match                 input.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  log_source
@@ -203,6 +203,14 @@ spec:
             Alias                 structured-logs.copy._log_last
             Match                 structured-logs.*
             Hard_copy             log _log_last
+        
+        [FILTER]
+            Name                  lua
+            Alias                 structured-logs.flb_tags
+            Match                 structured-logs.*
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  flb_tags
+            type_array_key        tags
     
         ### Multiline Processing START
         
@@ -409,14 +417,6 @@ spec:
             Rename                uname         name
         
         [FILTER]
-            Name                  lua
-            Alias                 record.log_tag
-            Match                 structured-logs.*
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  log_tag
-            type_array_key        tags
-        
-        [FILTER]
             Name                  rewrite_tag
             Alias                 final-structured-logs
             Emitter_Name          final-structured-logs
@@ -621,8 +621,9 @@ spec:
           return 2, timestamp, record
         end
         
-        function log_tag(tag, timestamp, record)
-          record["_log_tag"] = tag
+        function flb_tags(tag, timestamp, record)
+          if not record["_flb_tags"] then record["_flb_tags"] = {} end
+          table.insert(record["_flb_tags"], tag)
           return 2, timestamp, record
         end
         
@@ -679,7 +680,7 @@ spec:
                     value = string.upper(value)
                 end
                 
-                --Map {} to empty string
+                --Map {} to nil (empty)
                 if (type(value) == "table" and next(value) == nil) or value == "{}" then
                     value = nil
                 end
