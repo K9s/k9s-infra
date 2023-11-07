@@ -196,25 +196,25 @@ spec:
             Match                 structured.ingest.*
             Copy                  log _raw_log
     
-        #### Multiline Processing START
-        #
-        #[FILTER]
-        #    name                  multiline
-        #    Alias                 structured.multiline
-        #    Emitter_Name          structured.multiline
-        #    match                 structured.*
-        #    multiline.key_content log
-        #    multiline.parser      cri, docker, go, python, java
-        #    buffer                On
-        #
-        #[FILTER]
-        #    Name                  modify
-        #    Alias                 structured.modify.multiline
-        #    Match                 structured.multiline
-        #    Set                   _reprocessed multiline
-        #    Set                   _reprocessed_multiline true
-        #
-        #### Multiline Reprocessing END
+        ### Multiline Processing START
+
+        [FILTER]
+            name                  multiline
+            Alias                 structured.multiline
+            Emitter_Name          structured.multiline
+            match                 structured.ingress.*
+            multiline.key_content log
+            multiline.parser      cri, docker, go, python, java
+            buffer                On
+
+        [FILTER]
+            Name                  modify
+            Alias                 structured.modify.multiline
+            Match                 structured.multiline
+            Set                   _reprocessed multiline
+            Set                   _reprocessed_multiline true
+
+        ### Multiline Reprocessing END
         
         [FILTER]
             Name                  parser
