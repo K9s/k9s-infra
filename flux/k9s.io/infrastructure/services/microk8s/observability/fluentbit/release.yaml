@@ -188,7 +188,7 @@ spec:
             Name                  modify
             Alias                 structured.modify._reprocessed
             Match                 structured.ingest.*
-            Set                   _reprocessed no
+            Set                   _reprocessed raw
         
         [FILTER]
             Name                  modify
@@ -351,6 +351,7 @@ spec:
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  unparsed_log
+            enable_flb_null       On
         
         ## Reprocessing rewrite tags
         
@@ -639,14 +640,17 @@ spec:
         end
         
         function unparsed_log(tag, timestamp, record)
-          if record["_log_remaining"] then
+          if record["_log_remaining"] and record["_raw_log"] ~= nil then
             if record["_log_remaining"] == record["_raw_log"] then
-              record["_log_remaining"] = "_raw_log"
-              record["_reprocessed"] = "failed"
+              record["_processing_status"] = "failed"
             else
-              record["_reprocessed"] = "partial"
+              record["_processing_status"] = "partial"
             end
+          else
+            record["_processing_status"] = "parsed"
           end
+        
+          record["_reprocessed"] = record["_processing_status"] .. "(" .. record["_reprocessed"] .. ")"
         
           return 2, timestamp, record
         end
