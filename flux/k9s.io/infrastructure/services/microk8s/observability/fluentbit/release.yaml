@@ -682,12 +682,12 @@ spec:
         function unparsed_log(tag, timestamp, record)
           if record["_log_remaining"] and record["_raw_log"] ~= nil then
             if record["_log_remaining"] == record["_raw_log"] then
-              record["_processing_status"] = "failed"
+              record["_processing_status"] = "unparsed"
             else
-              record["_processing_status"] = "partial"
+              record["_processing_status"] = "incomplete"
             end
           else
-            record["_processing_status"] = "parsed"
+            record["_processing_status"] = "complete"
           end
         
           record["_reprocessed"] = record["_processing_status"] .. "(" .. record["_reprocessed"] .. ")"
