@@ -224,6 +224,15 @@ spec:
             Reserve_Data          On
             Preserve_Key          Off
             Parser                simple-datetime-log-with-level-and-optional-msg
+        
+        [FILTER]
+            Name                  parser
+            Alias                 structured.parse.greedy
+            Match                 structured.*
+            Key_Name              log
+            Reserve_Data          On
+            Preserve_Key          Off
+            Parser                greedy-log-msg
     
         [FILTER]
             Name                  parser
@@ -544,6 +553,11 @@ spec:
             Regex       ^(?<host>[^ ]*) - (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*)\s*(?<size>[^ ]*) "(?<referer>[^\"]*)" "(?<agent>[^\"]*)" (?<request_length>[^ ]*) (?<request_time>[^ ]*) \[(?<proxy_upstream_name>[^ ]*)\] (\[(?<proxy_alternative_upstream_name>[^ ]*)\] )?(?<upstream_addr>[^ ]*) (?<upstream_response_length>[^ ]*) (?<upstream_response_time>[^ ]*) (?<upstream_status>[^ ]*) (?<reg_id>[^ ]*).*$
             Time_Key    time
             Time_Format %d/%b/%Y:%H:%M:%S %z
+        
+        [PARSER]
+            Name        greedy-log-msg
+            Format      regex
+            Regex       ^(?<log>{.*})(?<msg>.*)
         
         [PARSER]
             Name        json
