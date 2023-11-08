@@ -370,7 +370,7 @@ spec:
             Alias                 structured.reprocess.logfmt
             Emitter_Name          structured.reprocess.logfmt
             Match                 structured.*
-            Rule                  $log ^\S*=.*=.*$ structured.reprocess.logfmt false
+            Rule                  $log ^\w*=\w*.*=\w* structured.reprocess.logfmt false
 
         [FILTER]
             Name                  rewrite_tag
