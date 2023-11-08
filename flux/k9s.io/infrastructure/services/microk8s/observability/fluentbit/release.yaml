@@ -244,6 +244,7 @@ spec:
             Parser                simple-datetime-msg-2
             Parser                simple-datetime-with-level
             Parser                minecraft-java-msg
+            Parser                redis
 
         # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
         [FILTER]
@@ -601,6 +602,14 @@ spec:
             Time_Format %H:%M:%S
     
         [PARSER]
+            Name   redis
+            Format regex
+            Regex  ^(?<pid>[\d]):(?<role>[\w])\s(?<time>[^ ]*\s*[^ ]* [^ ]*\s[^ ]*)\s(?<level>[^ ]*)\s(?<msg>.*$)
+            Time_Key time
+            Time_Format %d %b %Y %H:%M:%S.%L
+            Types pid:integer role:string msg:string level:string
+    
+        [PARSER]
             Name                pass-through
             Format              regex
             Regex               ^(?<msg>.*)$
@@ -690,13 +699,14 @@ spec:
                 --Normalize level field value to standard log levels
                 if field == "level" then
                     value = string.upper(value)
-        
+                    
+                    -- Redis log levels https://gist.github.com/jgould22/f42ad756fc07143e2a104d7844f39b12
                     if value == "F" then value = "FATAL" end
                     if value == "E" or value == "ERR" or value == "EROR" then value = "ERROR" end
-                    if value == "W" or value == "WARNING" then value = "WARN" end
-                    if value == "I" then value = "INFO" end
-                    if value == "D" then value = "DEBUG" end
-                    if value == "T" then value = "TRACE" end
+                    if value == "W" or value == "*" or value == "WARNING" then value = "WARN" end
+                    if value == "I" or value == "-" then value = "INFO" end
+                    if value == "D" or value == "." then value = "DEBUG" end
+                    if value == "T" or value == "#" then value = "TRACE" end
                     
                     --Add field if loglevel is not one of the expected values create field for troubleshooting
                     if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE'}, value) then
