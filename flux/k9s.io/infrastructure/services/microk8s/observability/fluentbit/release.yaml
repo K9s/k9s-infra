@@ -718,10 +718,11 @@ spec:
                     if value == "W" or value == "*" or value == "WARNING" then value = "WARN" end
                     if value == "I" or value == "-" then value = "INFO" end
                     if value == "D" or value == "." then value = "DEBUG" end
-                    if value == "T" or value == "#" then value = "TRACE" end
+                    if value == "T" then value = "TRACE" end
+                    if value == "#" then value = "NOTICE" end
                     
                     --Add field if loglevel is not one of the expected values create field for troubleshooting
-                    if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE'}, value) then
+                    if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE', 'CRITICAL', 'NOTICE'}, value) then
                         _record["_invalid_level"] = value
                     end
                 end
