@@ -237,6 +237,15 @@ spec:
         
         [FILTER]
             Name                  parser
+            Alias                 structured.parse.auth
+            Match                 structured.ingest.host.auth
+            Key_Name              log
+            Reserve_Data          On
+            Preserve_Key          Off
+            Parser                auth-log
+        
+        [FILTER]
+            Name                  parser
             Alias                 structured.parse
             Match                 structured.*
             Key_Name              log
@@ -255,7 +264,6 @@ spec:
             Parser                simple-datetime-with-level
             Parser                minecraft-java-msg
             Parser                redis
-            Parser                auth-log
             Parser                simple-level-msg
 
         # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
