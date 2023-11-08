@@ -175,14 +175,6 @@ spec:
             Rename                message   log
             Rename                MESSAGE   log
             Rename                msg       log
-        
-        [FILTER]
-            Name                  modify
-            Alias                 structured.rename.log.msg
-            Match                 structured.*
-            Hard_rename           message   _message
-            Hard_rename           MESSAGE   _cap_message
-            Hard_rename           msg       _msg
 
         [FILTER]
             Name                  modify
