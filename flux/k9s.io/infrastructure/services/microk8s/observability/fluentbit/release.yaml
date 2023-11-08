@@ -513,7 +513,7 @@ spec:
         [PARSER]
             Name        greedy-log-msg
             Format      regex
-            Regex       ^(?<log>{.*})(?<msg>.+)
+            Regex       ^(?<log>{.*})(?<msg>.+)?$
         
         [PARSER]
             Name        cri
