@@ -211,7 +211,7 @@ spec:
         [FILTER]
             Name                  parser
             Alias                 structured.parse.greedy
-            Match                 structured.*
+            Match                 structured.reprocess.*
             Key_Name              log
             Reserve_Data          On
             Preserve_Key          Off
@@ -220,7 +220,7 @@ spec:
         [FILTER]
             Name                  parser
             Alias                 structured.parse.json
-            Match                 structured.*
+            Match                 structured.reprocess.*
             Key_Name              json
             Reserve_Data          On
             Preserve_Key          Off
