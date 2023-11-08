@@ -215,7 +215,7 @@ spec:
             Key_Name              log
             Reserve_Data          On
             Preserve_Key          Off
-            Parser                greedy-json-log
+            Parser                greedy-log
         
         [FILTER]
             Name                  parser
@@ -531,9 +531,9 @@ spec:
             Time_Format %Y-%m-%dT%H:%M:%S.%L%z
         
         [PARSER]
-            Name        greedy-json-log
+            Name        greedy-log
             Format      regex
-            Regex       ^(?<json>{.*})(?<log>.+)?$
+            Regex       ^((?<json>{.*})|\[(?<msg>[^ ]*)\])(?<log>.+)?$
         
         [PARSER]
             Name        cri
