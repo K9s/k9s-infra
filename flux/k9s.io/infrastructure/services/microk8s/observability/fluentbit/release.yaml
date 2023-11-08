@@ -384,17 +384,33 @@ spec:
             Rule                  $log ^\w*=\w*.*=\w* structured.reprocess.logfmt false
 
         [FILTER]
+            Name                  modify
+            Alias                 structured.rename.log
+            Match                 structured.*
+            Rename                log message
+            Hard_rename           log _log
+            Condition             Key_exists  _reprocessed_log
+
+        [FILTER]
             Name                  rewrite_tag
             Alias                 structured.reprocess.log
             Emitter_Name          structured.reprocess.log
-            Match                 structured.ingest.*
+            Match                 structured.*
             Rule                  $log ^. structured.reprocess.log false
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.rename.msg
+            Match                 structured.*
+            Rename                msg message
+            Hard_rename           msg _msg
+            Condition             Key_exists  _reprocessed_msg
         
         [FILTER]
             Name                  rewrite_tag
             Alias                 structured.reprocess.msg
             Emitter_Name          structured.reprocess.msg
-            Match                 structured.ingest.*
+            Match                 structured.*
             Rule                  $msg ^. structured.reprocess.msg false
         
         # Reprocessing END
@@ -428,13 +444,6 @@ spec:
             call                  normalize
             type_array_key        tags
             enable_flb_null       On
-
-        [FILTER]
-            Name                  modify
-            Alias                 structured.rename.message
-            Match                 structured.*
-            Rename                msg         message
-            Rename                log         message
         
         [FILTER]
             Name                  modify
