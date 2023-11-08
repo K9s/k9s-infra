@@ -175,12 +175,6 @@ spec:
             Rename                message   log
             Rename                MESSAGE   log
             Rename                msg       log
-
-        [FILTER]
-            Name                  modify
-            Alias                 structured.modify._reprocessed
-            Match                 structured.ingest.*
-            Set                   _reprocessed raw
         
         [FILTER]
             Name                  modify
@@ -203,7 +197,7 @@ spec:
             Name                  modify
             Alias                 structured.modify.multiline
             Match                 structured.multiline
-            Set                   _reprocessed multiline
+            Set                   _last_processed multiline
             Set                   _reprocessed_multiline true
 
         ### Multiline Reprocessing END
@@ -326,21 +320,21 @@ spec:
             Name                  modify
             Alias                 structured.modify.reprocess.logfmt
             Match                 structured.reprocess.logfmt
-            Set                   _reprocessed logfmt
+            Set                   _last_processed logfmt
             Set                   _reprocessed_logfmt true
         
         [FILTER]
             Name                  modify
             Alias                 structured.modify.reprocess.log
             Match                 structured.reprocess.log
-            Set                   _reprocessed log
+            Set                   _last_processed log
             Set                   _reprocessed_log true
         
         [FILTER]
             Name                  modify
             Alias                 structured.modify.reprocess.msg
             Match                 structured.reprocess.msg
-            Set                   _reprocessed msg
+            Set                   _last_processed msg
             Set                   _reprocessed_msg true
         
         ## Reprocessing debug
@@ -698,13 +692,26 @@ spec:
           else
             record["_processing_status"] = "complete"
           end
-        
-          record["_reprocessed"] = record["_processing_status"] .. "(" .. record["_reprocessed"] .. ")"
-        
+          
+          processed = {}
+          for k, v in pairs(record["_reprocessed"]) do
+            table.insert(processed, record["_processing_status"] .. ":" .. v)
+          end
+          record["_reprocessed"] = processed
+          
           return 2, timestamp, record
         end
         
         function flb_tags(tag, timestamp, record)
+          if not record["_reprocessed"] or type(record["_reprocessed"]) == "string" then 
+            record["_reprocessed"] = {}
+            table.insert(record["_reprocessed"], "raw")
+          end
+        
+          if record["_last_processed"] then
+            table.insert(record["_reprocessed"], record["_last_processed"])
+          end
+        
           if not record["_flb_tags"] then 
             record["_flb_tags"] = {}
             record["_flb_processed"] = "yes"
