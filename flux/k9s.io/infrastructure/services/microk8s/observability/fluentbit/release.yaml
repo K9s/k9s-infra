@@ -111,6 +111,7 @@ spec:
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  flb_tags
             type_array_key        tags
+            enable_flb_null       On
         
         # Kubernetes
         [FILTER]
@@ -298,6 +299,7 @@ spec:
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
             type_array_key        tags
+            enable_flb_null       On
         
         # Reprocessing Start
         
@@ -408,6 +410,7 @@ spec:
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
             type_array_key        tags
+            enable_flb_null       On
 
         [FILTER]
             Name                  modify
