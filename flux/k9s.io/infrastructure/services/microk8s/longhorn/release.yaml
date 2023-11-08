@@ -13,6 +13,8 @@ spec:
         namespace: longhorn-system
       version: "1.4.3"
   values:
+    defaultSettings:
+      logLevel: Info
     persistence:
       defaultClassReplicaCount: 1
     ingress:
