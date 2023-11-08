@@ -618,7 +618,7 @@ spec:
         [PARSER]
             Name   redis
             Format regex
-            Regex  ^(?<pid>[\d]):(?<role>[\w])\s(?<time>[^ ]*\s*[^ ]* [^ ]*\s[^ ]*)\s(?<level>[^ ]*)\s(?<msg>.*$)
+            Regex  ^(?<pid>\d*):(?<role>[\w])\s(?<time>[^ ]*\s*[^ ]* [^ ]*\s[^ ]*)\s(?<level>[^ ]*)\s(?<msg>.*$)
             Time_Key time
             Time_Format %d %b %Y %H:%M:%S.%L
             Types pid:integer role:string msg:string level:string
