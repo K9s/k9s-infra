@@ -234,7 +234,6 @@ spec:
             Preserve_Key          Off
             Parser                json
             Parser                kube-logs
-            Parser                docker-daemon
             Parser                containerd
             Parser                apache_nginx_combined
             Parser                apache_error
@@ -507,13 +506,6 @@ spec:
             Regex       ^(?<time>\d*-\d*-\d*.\d*:\d*:\d*\.\d*.) (?<log>.*) (?<level>FATAL|ERROR|WARN|INFO|DEBUG|TRACE|UNKNOWN)(: )?(?<msg>.*)?
             Time_Key    time
             Time_Format %Y-%m-%dT%H:%M:%S.%L%z
-            
-        [PARSER]
-            Name        docker-daemon
-            Format      regex
-            Regex       (^\[(?<container>.*)] )?time="(?<time>[^ ]*)" level=(?<level>[^ ]*) (?<log>.*)
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S
 
         [PARSER]
             Name        cri
