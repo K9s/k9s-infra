@@ -611,7 +611,7 @@ spec:
         [PARSER]
             Name        minecraft-java-msg
             Format      regex
-            Regex       ^\[(?<time>\d*:\d*:\d*)\] \[(?<thread>[^\]]*)\/(?<level>[^\]]*)\] \[(?<namespace>[^\]]*)]: (?<msg>.*)?
+            Regex       ^\[(?<time>\d*:\d*:\d*)\] \[(?<thread>[^\]]*)\/(?<level>[^\]]*)\]: (?<msg>.*)?
             Time_Key    time
             Time_Format %H:%M:%S
     
