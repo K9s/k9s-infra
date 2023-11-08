@@ -210,6 +210,15 @@ spec:
         
         [FILTER]
             Name                  parser
+            Alias                 structured.parse.greedy
+            Match                 structured.*
+            Key_Name              log
+            Reserve_Data          On
+            Preserve_Key          Off
+            Parser                greedy-log-msg
+        
+        [FILTER]
+            Name                  parser
             Alias                 structured.parse.simple
             Match                 structured.*
             Key_Name              log
@@ -217,15 +226,6 @@ spec:
             Preserve_Key          Off
             Parser                simple-datetime-log-with-level-and-optional-msg
         
-        [FILTER]
-            Name                  parser
-            Alias                 structured.parse.greedy
-            Match                 structured.*
-            Key_Name              log
-            Reserve_Data          On
-            Preserve_Key          Off
-            Parser                greedy-log-msg
-    
         [FILTER]
             Name                  parser
             Alias                 structured.parse
