@@ -254,6 +254,7 @@ spec:
             Parser                simple-datetime-with-level
             Parser                minecraft-java-msg
             Parser                redis
+            Parser                simple-level-msg
 
         # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
         [FILTER]
@@ -586,6 +587,11 @@ spec:
             Regex       ^(?<time>[^\]]*) \[(?<level>[A-Z]*)\]\[([^ ]*)\] (?<file>[^ ]*) (?<line>[\d ]*): (?<msg>.*)
             Time_Key    time
             Time_Format %Y-%m-%d %H:%M:%S.%L
+    
+        [PARSER]
+            Name        simple-level-msg
+            Format      regex
+            Regex       ^#(?<level>.*):(?<msg>.*)$
     
         [PARSER]
             Name        simple-datetime-with-level
