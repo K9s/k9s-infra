@@ -63,13 +63,12 @@ spec:
             multiline.parser      docker, cri
             DB                    /var/log/flb_kube.db
             storage.type          memrb
-            Mem_Buf_Limit         50MB
+            Mem_Buf_Limit         150MB
             Buffer_Chunk_Size     256k
-            Buffer_Max_Size       1M
+            Buffer_Max_Size       10M
             Skip_Long_Lines       On
             Skip_Empty_Lines      On
             Refresh_Interval      10
-            #threaded              on
         
         [INPUT]
             Name                  tail
@@ -78,9 +77,9 @@ spec:
             Path                  /var/log/auth.log
             DB                    /var/log/flb_auth_log.db
             storage.type          memrb
-            Mem_Buf_Limit         50MB
+            Mem_Buf_Limit         150MB
             Buffer_Chunk_Size     256k
-            Buffer_Max_Size       1M
+            Buffer_Max_Size       10M
             Skip_Empty_Lines      On
             Refresh_Interval      10
             #threaded              on
@@ -493,7 +492,7 @@ spec:
             tls                       On
             tls.verify                Off
             Trace_Error               On
-            Buffer_Size               1M
+            Buffer_Size               False
             storage.total_limit_size  200M
     
         [OUTPUT]
@@ -511,7 +510,7 @@ spec:
             tls                       On
             tls.verify                Off
             Trace_Error               On
-            Buffer_Size               1M
+            Buffer_Size               False
             storage.total_limit_size  200M
 
       ## https://docs.fluentbit.io/manual/pipeline/parsers
