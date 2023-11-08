@@ -247,6 +247,7 @@ spec:
             Parser                simple-datetime-with-level
             Parser                minecraft-java-msg
             Parser                redis
+            Parser                auth-log
             Parser                simple-level-msg
 
         # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
@@ -623,6 +624,13 @@ spec:
             Time_Key time
             Time_Format %d %b %Y %H:%M:%S.%L
             Types pid:integer role:string msg:string level:string
+    
+        [PARSER]
+            Name    auth-log
+            Format  regex
+            Regex   ^(?<time>\w+\s+\d+ (\d+:){2}\d+) (?<host>[\S]*) (?<program>[^\[\] ]*)(\[(?<pid>\d*)\])?: (?<msg>.*)$
+            Time_Key time
+            Time_Format %b %d %H:%M:%S
     
         [PARSER]
             Name                pass-through
