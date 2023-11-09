@@ -112,6 +112,14 @@ spec:
             type_array_key        tags
             enable_flb_null       On
         
+        [FILTER]
+            Name                  throttle
+            Alias                 throttle.fluent-bit
+            Match                 in.kube.observability.fluent-bit.*
+            Rate                  2
+            Window                1
+            Interval              1s
+        
         # Kubernetes
         [FILTER]
             Name                  kubernetes
@@ -151,6 +159,13 @@ spec:
             Operation             lift
             Nested_under          kubernetes_annotations
             Add_prefix            kubernetes_annotations/
+
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 in.kube
+            Emitter_Name          in.kube
+            Match                 in.kube.cluster.*
+            Rule                  $_flb_processed ^. in.kube.$kubernetes_namespace_name.$kubernetes_container_name.$kubernetes_pod_name false
     
         # Raw Logs
         [FILTER]
@@ -443,20 +458,20 @@ spec:
             Name                  modify
             Alias                 structured.rename.misc
             Match                 structured.*
-            Rename                uri           url
-            Rename                t             timestamp
-            Rename                ts            timestamp
-            Rename                time          timestamp
-            Rename                log_timestamp timestamp
-            Rename                status        statuscode
-            Rename                code          statuscode
-            Rename                requestmethod method
-            Rename                agent         user-agent
-            Rename                user_agent    user-agent
-            Rename                errors        error
-            Rename                err           error
-            Rename                host          hostname
-            Rename                uname         name
+            Rename                uri               url
+            Rename                t                 timestamp
+            Rename                ts                timestamp
+            Rename                time              timestamp
+            Rename                log_timestamp     timestamp
+            Rename                status            statuscode
+            Rename                code              statuscode
+            Rename                requestmethod     method
+            Rename                agent             user-agent
+            Rename                user_agent        user-agent
+            Rename                errors            error
+            Rename                err               error
+            Rename                host              hostname
+            Rename                uname             name
             
         [FILTER]
             Name                  rewrite_tag
