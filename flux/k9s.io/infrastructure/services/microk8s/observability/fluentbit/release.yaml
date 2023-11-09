@@ -377,10 +377,10 @@ spec:
         
         [FILTER]
             Name                  lua
-            Alias                 final.structured.lua.unparsed
+            Alias                 final.structured.lua.set_processing_status
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
-            call                  unparsed_log
+            call                  set_processing_status
             enable_flb_null       On
         
         ## Reprocessing rewrite tags
@@ -679,25 +679,8 @@ spec:
            return from > #s and "" or s:match(".*%S", from)
         end
         
-        function logfmt(t)
-            if type(t) == "table" then
-                result = ""
-                for k,v in pairs(t) do 
-                  if type(v) == "table" then
-                    value = logfmt(v)
-                  else
-                    value = v
-                  end
-        
-                  result = result .. k .. "=" .. tostring(value) .. " " 
-                end
-                return result:gsub("%s$", "")
-            else
-                return t
-            end
-        end
-        
-        function unparsed_log(tag, timestamp, record)
+        function set_processing_status(tag, timestamp, record)
+          -- Set _processing_status field to current state of parsing
           if record["_log_remaining"] and record["_raw_log"] ~= nil then
             if record["_log_remaining"] == record["_raw_log"] then
               record["_processing_status"] = "unparsed"
@@ -708,7 +691,8 @@ spec:
             record["_processing_status"] = "complete"
           end
           
-          processed = {}
+          -- This prefixes _processing_status with each item in _reprocessed this is to make troubleshooting easier
+          local processed = {}
           for k, v in pairs(record["_reprocessed"]) do
             table.insert(processed, record["_processing_status"] .. ":" .. v)
           end
@@ -718,20 +702,22 @@ spec:
         end
         
         function flb_tags(tag, timestamp, record)
+          -- Extend _reprocessed field with the value of _last_processed
           if not record["_reprocessed"] or type(record["_reprocessed"]) == "string" then 
             record["_reprocessed"] = {}
             table.insert(record["_reprocessed"], "raw")
           end
-        
           if record["_last_processed"] then
             table.insert(record["_reprocessed"], record["_last_processed"])
           end
         
+          -- Extend _flb_tags field with tag
           if not record["_flb_tags"] then 
             record["_flb_tags"] = {}
             record["_flb_processed"] = "yes"
           end
           table.insert(record["_flb_tags"], tag)
+        
           return 2, timestamp, record
         end
         
@@ -799,8 +785,8 @@ spec:
                 if field:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") then
                     _record[field] = value
                 else
-                    if not _record["_rejected_fields"] then _record["_rejected_fields"] = "" end
-                    _record["_rejected_fields"] = _record["_rejected_fields"] .. field .. "=" .. tostring(logfmt(value)) .. " "
+                    if not _record["_rejected_fields"] or type(record["_rejected_fields"]) == "string" then _record["_rejected_fields"] = {} end
+                    table.insert(_record["_rejected_fields"], field)
                 end
         
                 --print("field:", field, "Value:", _record[field], "Value:", type(_record[field]))
