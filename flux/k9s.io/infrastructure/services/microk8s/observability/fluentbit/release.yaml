@@ -213,9 +213,28 @@ spec:
             Alias                 structured.modify.multiline
             Match                 structured.multiline
             Set                   _last_processed multiline
-            Set                   _reprocessed_multiline true
+            Set                   _processed_multiline true
 
         ### Multiline Reprocessing END
+        
+        [FILTER]
+            Name                  parser
+            Alias                 structured.parse.auth
+            Match                 structured.ingest.host.auth
+            Key_Name              log
+            Reserve_Data          On
+            Preserve_Key          Off
+            Parser                auth-log
+        
+        # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
+        [FILTER]
+            Name                  parser
+            Alias                 structured.parse.logfmt
+            Match                 structured.reprocess.logfmt
+            Key_Name              log
+            Reserve_Data          On
+            Preserve_Key          Off
+            Parser                logfmt
         
         [FILTER]
             Name                  parser
@@ -246,15 +265,6 @@ spec:
         
         [FILTER]
             Name                  parser
-            Alias                 structured.parse.auth
-            Match                 structured.ingest.host.auth
-            Key_Name              log
-            Reserve_Data          On
-            Preserve_Key          Off
-            Parser                auth-log
-        
-        [FILTER]
-            Name                  parser
             Alias                 structured.parse
             Match                 structured.*
             Key_Name              log
@@ -274,24 +284,7 @@ spec:
             Parser                minecraft-java-msg
             Parser                redis
             Parser                simple-level-msg
-
-        # logfmt is too broad to apply for all logs  https://github.com/fluent/fluent-bit/issues/4927 
-        [FILTER]
-            Name                  parser
-            Alias                 structured.parse.logfmt
-            Match                 structured.reprocess.logfmt
-            Key_Name              log
-            Reserve_Data          On
-            Preserve_Key          Off
-            Parser                logfmt
         
-        # If logfmt ^ fails to parse (resulting in log field remaining) rename that field to prevent loop during reprocessing
-        [FILTER]
-            Name                  modify
-            Alias                 structured.reprocess.logfmt.rename.log
-            Match                 structured.reprocess.logfmt
-            Hard_rename           log         _log
-    
         [FILTER]
             Name                  modify
             Alias                 structured.rename.level
@@ -336,69 +329,61 @@ spec:
             Alias                 structured.modify.reprocess.logfmt
             Match                 structured.reprocess.logfmt
             Set                   _last_processed logfmt
-            Set                   _reprocessed_logfmt true
+            Set                   _processed_logfmt true
         
         [FILTER]
             Name                  modify
             Alias                 structured.modify.reprocess.log
             Match                 structured.reprocess.log
             Set                   _last_processed log
-            Set                   _reprocessed_log true
+            Set                   _processed_log true
         
         [FILTER]
             Name                  modify
             Alias                 structured.modify.reprocess.msg
             Match                 structured.reprocess.msg
             Set                   _last_processed msg
-            Set                   _reprocessed_msg true
+            Set                   _processed_msg true
         
         ## Reprocessing debug
         
         [FILTER]
             Name                  modify
-            Alias                 structured.remove._log_.log
+            Alias                 structured.cleanup._log_remaining.log
             Match                 structured.*
             Remove                _log_remaining
             Condition             Key_does_not_exist    log
         
         [FILTER]
             Name                  modify
-            Alias                 structured.copy._log_remaining.log
+            Alias                 structured.create._log_remaining
             Match                 structured.*
             Hard_copy             log _log_remaining
-            Condition             Key_exists    log
-        
-        [FILTER]
-            Name                  modify
-            Alias                 structured.remove._log_remaining.log
-            Match                 structured.*
-            Remove                _log_remaining
-            Condition             Key_exists    _reprocessed_msg
-        
-        [FILTER]
-            Name                  lua
-            Alias                 final.structured.lua.set_processing_status
-            Match                 final.structured
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  set_processing_status
-            enable_flb_null       On
         
         ## Reprocessing rewrite tags
         
         [FILTER]
-            Name                  rewrite_tag
-            Alias                 structured.reprocess.logfmt
-            Emitter_Name          structured.reprocess.logfmt
+            Name                  modify
+            Alias                 structured.gate.reprocess.msg
             Match                 structured.*
-            Rule                  $log ^\w*=\w*.*=\w* structured.reprocess.logfmt false
-
+            Rename                msg message
+            Hard_rename           msg _msg
+            Condition             Key_exists  _processed_msg
+        
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 structured.reprocess.msg
+            Emitter_Name          structured.reprocess.msg
+            Match                 structured.*
+            Rule                  $msg ^. structured.reprocess.msg false
+        
         [FILTER]
             Name                  modify
-            Alias                 structured.rename.log
+            Alias                 structured.gate.reprocess.log
             Match                 structured.*
             Rename                log message
             Hard_rename           log _log
-            Condition             Key_exists  _reprocessed_log
+            Condition             Key_exists  _processed_log
 
         [FILTER]
             Name                  rewrite_tag
@@ -409,70 +394,29 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 structured.rename.msg
+            Alias                 structured.gate.rename._log.logfmt
             Match                 structured.*
-            Rename                msg message
-            Hard_rename           msg _msg
-            Condition             Key_exists  _reprocessed_msg
-        
-        [FILTER]
-            Name                  rewrite_tag
-            Alias                 structured.reprocess.msg
-            Emitter_Name          structured.reprocess.msg
-            Match                 structured.*
-            Rule                  $msg ^. structured.reprocess.msg false
-        
-        # Reprocessing END
-
-        [FILTER]
-            Name                  nest
-            Alias                 structured.lift.httprequest
-            Match                 structured.*
-            Operation             lift
-            Nested_under          httprequest
-        
-        [FILTER]
-            Name                  nest
-            Alias                 structured.lift.req
-            Match                 structured.*
-            Operation             lift
-            Nested_under          req
-        
-        [FILTER]
-            Name                  nest
-            Alias                 structured.lift.res
-            Match                 structured.*
-            Operation             lift
-            Nested_under          res
-
-        [FILTER]
-            Name                  lua
-            Alias                 structured.normalize.final
-            Match                 structured.*
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  normalize
-            type_array_key        tags
-            enable_flb_null       On
+            Rename                message  log
+            Rename                _log  log
+            Condition             Key_does_not_exist  _processed_logfmt
         
         [FILTER]
             Name                  modify
-            Alias                 structured.rename.misc
+            Alias                 structured.gate.reprocess.logfmt
             Match                 structured.*
-            Rename                uri               url
-            Rename                t                 timestamp
-            Rename                ts                timestamp
-            Rename                time              timestamp
-            Rename                log_timestamp     timestamp
-            Rename                status            statuscode
-            Rename                code              statuscode
-            Rename                requestmethod     method
-            Rename                agent             user-agent
-            Rename                user_agent        user-agent
-            Rename                errors            error
-            Rename                err               error
-            Rename                host              hostname
-            Rename                uname             name
-            
+            Rename                log message
+            Hard_rename           log _log
+            Condition             Key_exists  _processed_logfmt
+
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 structured.reprocess.logfmt
+            Emitter_Name          structured.reprocess.logfmt
+            Match                 structured.*
+            Rule                  $log ^(\w+=.+?){2,}$ structured.reprocess.logfmt false
+        
+        # Reprocessing END
+
         [FILTER]
             Name                  rewrite_tag
             Alias                 final-structured
@@ -488,11 +432,84 @@ spec:
             Emitter_Storage.type  filesystem
             Match                 raw.*
             Rule                  $_flb_processed ^. final.raw false
+
+        [FILTER]
+            Name                  modify
+            Alias                 structured.rename.log-msg.final
+            Match                 final.structured
+            Rename                log     message
+            Rename                msg     message
+            Rename                _log    message
+            Rename                _msg    message
+
+        [FILTER]
+            Name                  modify
+            Alias                 structured.remove._log_remaining.log
+            Match                 final.structured
+            Remove                _log_remaining
+            Condition             Key_exists    _processed_msg
+        
+        [FILTER]
+            Name                  lua
+            Alias                 final.structured.lua.set_processing_status
+            Match                 final.structured
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  set_processing_status
+            enable_flb_null       On
+
+        [FILTER]
+            Name                  nest
+            Alias                 structured.lift.httprequest
+            Match                 final.structured
+            Operation             lift
+            Nested_under          httprequest
+        
+        [FILTER]
+            Name                  nest
+            Alias                 structured.lift.req
+            Match                 final.structured
+            Operation             lift
+            Nested_under          req
+        
+        [FILTER]
+            Name                  nest
+            Alias                 structured.lift.res
+            Match                 final.structured
+            Operation             lift
+            Nested_under          res
+
+        [FILTER]
+            Name                  lua
+            Alias                 structured.normalize.final
+            Match                 final.structured
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  normalize
+            type_array_key        tags
+            enable_flb_null       On
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.rename.misc
+            Match                 final.structured
+            Rename                uri               url
+            Rename                t                 timestamp
+            Rename                ts                timestamp
+            Rename                time              timestamp
+            Rename                log_timestamp     timestamp
+            Rename                status            statuscode
+            Rename                code              statuscode
+            Rename                requestmethod     method
+            Rename                agent             user-agent
+            Rename                user_agent        user-agent
+            Rename                errors            error
+            Rename                err               error
+            Rename                host              hostname
+            Rename                uname             name
         
         [FILTER]
             Name                  modify
             Alias                 remove.flb_processed
-            Match                 *
+            Match                 final.*
             Remove                _flb_processed
         
         #[FILTER]
@@ -684,31 +701,33 @@ spec:
           if record["_log_remaining"] and record["_raw_log"] ~= nil then
             if record["_log_remaining"] == record["_raw_log"] then
               record["_processing_status"] = "unparsed"
+              record["_log_remaining"] = nil
             else
               record["_processing_status"] = "incomplete"
             end
           else
             record["_processing_status"] = "complete"
+            record["_log_remaining"] = nil
           end
           
-          -- This prefixes _processing_status with each item in _reprocessed this is to make troubleshooting easier
+          -- This prefixes _processing_status with each item in _processed this is to make troubleshooting easier
           local processed = {}
-          for k, v in pairs(record["_reprocessed"]) do
+          for k, v in pairs(record["_processed"]) do
             table.insert(processed, record["_processing_status"] .. ":" .. v)
           end
-          record["_reprocessed"] = processed
+          record["_processed"] = processed
           
           return 2, timestamp, record
         end
         
         function flb_tags(tag, timestamp, record)
-          -- Extend _reprocessed field with the value of _last_processed
-          if not record["_reprocessed"] or type(record["_reprocessed"]) == "string" then 
-            record["_reprocessed"] = {}
-            table.insert(record["_reprocessed"], "raw")
+          -- Extend _processed field with the value of _last_processed
+          if not record["_processed"] or type(record["_processed"]) == "string" then 
+            record["_processed"] = {}
+            table.insert(record["_processed"], "raw")
           end
           if record["_last_processed"] then
-            table.insert(record["_reprocessed"], record["_last_processed"])
+            table.insert(record["_processed"], record["_last_processed"])
           end
         
           -- Extend _flb_tags field with tag
