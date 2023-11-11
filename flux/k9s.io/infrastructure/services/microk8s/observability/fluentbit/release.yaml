@@ -326,7 +326,7 @@ spec:
     
         [FILTER]
             Name                  lua
-            Alias                 structured.normalize
+            Alias                 structured.lua.normalize
             Match                 structured.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
@@ -493,7 +493,7 @@ spec:
 
         [FILTER]
             Name                  lua
-            Alias                 structured.normalize.final
+            Alias                 structured.lua.normalize.final
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
@@ -518,6 +518,15 @@ spec:
             Rename                err               error
             Rename                host              hostname
             Rename                uname             name
+        
+        [FILTER]
+            Name                  lua
+            Alias                 structured.lua.statuscode_level.final
+            Match                 final.structured
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  statuscode_level
+            type_array_key        tags
+            enable_flb_null       On
         
         [FILTER]
             Name                  modify
@@ -762,9 +771,29 @@ spec:
             return false
         end
         
-        function normalize(tag, timestamp, record)
-            _record = {}
+        function statuscode_level(tag, timestamp, record)
+            if record["level"] == nil and record["statuscode"] then
+                statuscode = tonumber(record["statuscode"])
+                if statuscode then
+                    if statuscode >= 500 and statuscode < 600 then
+                        record["level"] = "FATAL"
+                    elseif statuscode >= 400 then
+                        record["level"] = "ERROR"
+                    elseif statuscode >= 300 then
+                        record["level"] = "WARN"
+                    elseif statuscode >= 200 then
+                        record["level"] = "INFO"
+                    elseif statuscode >= 100 then
+                        record["level"] = "DEBUG"
+                    end
+                end
+            end
         
+            return 2, timestamp, record
+        end
+        
+        function normalize(tag, timestamp, record)        
+            _record = {}
             for field, value in pairs(record) do
                 --Normalize field value and ensure basic types are preserved
                 if type(value) == "string" then
@@ -799,6 +828,7 @@ spec:
                     --Add field if loglevel is not one of the expected values create field for troubleshooting
                     if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE', 'CRITICAL', 'NOTICE'}, value) then
                         _record["_invalid_level"] = value
+                        _record["level"] = 'INVALID'
                     end
                 end
         
@@ -817,13 +847,11 @@ spec:
                     _record[field] = value
                 else
                     if not _record["_rejected_fields"] or type(record["_rejected_fields"]) == "string" then _record["_rejected_fields"] = {} end
-                    table.insert(_record["_rejected_fields"], field)
+                    table.insert(_record["_rejected_fields"], field, value)
                 end
         
                 --print("field:", field, "Value:", _record[field], "Value:", type(_record[field]))
             end
-        
-            if _record["_rejected_fields"] then _record["_rejected_fields"]:gsub("%s$", "") end 
         
             --_record["_ingest_timestamp"] = os.time(os.date("!*t"))
         
