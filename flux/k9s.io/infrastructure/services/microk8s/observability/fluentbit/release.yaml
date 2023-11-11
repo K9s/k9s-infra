@@ -38,6 +38,7 @@ spec:
         [SERVICE]
             Flush                   {{ .Values.flush }}
             Log_Level               {{ .Values.logLevel }}
+            Grace                   20
             Daemon                  off
             Parsers_File            custom_parsers.conf
             HTTP_Server             On
