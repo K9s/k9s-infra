@@ -73,8 +73,8 @@ spec:
         
         [INPUT]
             Name                  tail
-            Alias                 in.host.auth
-            Tag                   in.host.auth.*
+            Alias                 in.host.auth.log.local
+            Tag                   in.host.auth.log.local
             Path                  /var/log/auth.log
             DB                    /var/log/flb_auth_log.db
             storage.type          memrb
@@ -83,12 +83,11 @@ spec:
             Buffer_Max_Size       10M
             Skip_Empty_Lines      On
             Refresh_Interval      10
-            #threaded              on
 
         [INPUT]
             Name                  systemd
-            Alias                 in.host.systemd
-            Tag                   in.host.systemd.*
+            Alias                 in.host.systemd.unit
+            Tag                   in.host.systemd.unit.*
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-kicker.service 
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-cluster-agent.service
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-containerd.service
@@ -99,19 +98,16 @@ spec:
             Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
             DB                    /var/log/flb_systemd.db
             storage.type          memrb
-            Mem_Buf_Limit         50MB
+            Mem_Buf_Limit         150MB
             Strip_Underscores     On
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
       filters: |
         [FILTER]
-            Name                  lua
-            Alias                 flb_tags
-            Match                 *
-            script                /fluent-bit/scripts/sanitize_records.lua
-            call                  flb_tags
-            type_array_key        tags
-            enable_flb_null       On
+            Name                  modify
+            Alias                 in._flb_processed
+            Match                 in.*
+            Set                   _flb_processed yes
         
         [FILTER]
             Name                  throttle
@@ -168,13 +164,29 @@ spec:
             Match                 in.kube.cluster.*
             Rule                  $_flb_processed ^. in.kube.$kubernetes_namespace_name.$kubernetes_container_name.$kubernetes_pod_name false
     
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 in.host.systemd
+            Emitter_Name          in.host.systemd
+            Match                 in.host.systemd.unit.*
+            Rule                  $_flb_processed ^. in.host.systemd.$SYSLOG_IDENTIFIER.$HOSTNAME false
+        
+        [FILTER]
+            Name                  lua
+            Alias                 flb_tags
+            Match                 *
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  flb_tags
+            type_array_key        tags
+            enable_flb_null       On
+        
         # Raw Logs
         [FILTER]
             Name                  rewrite_tag
             Alias                 raw.ingest
             Emitter_Name          raw.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. raw.ingest.$TAG[1].$TAG[2] true
+            Rule                  $_flb_processed ^. raw.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4] true
             
         # Structured Logs
         [FILTER]
@@ -182,7 +194,7 @@ spec:
             Alias                 structured.ingest
             Emitter_Name          structured.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. structured.ingest.$TAG[1].$TAG[2] false
+            Rule                  $_flb_processed ^. structured.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4] false
             
         [FILTER]
             Name                  modify
@@ -221,7 +233,7 @@ spec:
         [FILTER]
             Name                  parser
             Alias                 structured.parse.auth
-            Match                 structured.ingest.host.auth
+            Match                 structured.ingest.host.auth.*
             Key_Name              log
             Reserve_Data          On
             Preserve_Key          Off
@@ -734,7 +746,6 @@ spec:
           -- Extend _flb_tags field with tag
           if not record["_flb_tags"] then 
             record["_flb_tags"] = {}
-            record["_flb_processed"] = "yes"
           end
           table.insert(record["_flb_tags"], tag)
         
