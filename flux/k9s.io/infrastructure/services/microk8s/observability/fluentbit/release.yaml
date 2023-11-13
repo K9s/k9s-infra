@@ -853,7 +853,7 @@ spec:
         end
         
         function normalize(tag, timestamp, record)        
-            _record = {}
+            local _record = {}
             for field, value in pairs(record) do
                 --Normalize field value and ensure basic types are preserved
                 if type(value) == "string" then
@@ -906,8 +906,8 @@ spec:
                 if field:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") then
                     _record[field] = value
                 else
-                    if not _record["_rejected_fields"] or type(record["_rejected_fields"]) == "string" then _record["_rejected_fields"] = {} end
-                    table.insert(_record["_rejected_fields"], field, value)
+                    if type(_record["_rejected_fields"]) ~= "table" then _record["_rejected_fields"] = {} end
+                    table.insert(_record["_rejected_fields"], field)
                 end
         
                 --print("field:", field, "Value:", _record[field], "Value:", type(_record[field]))
