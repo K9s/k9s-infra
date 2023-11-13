@@ -41,22 +41,24 @@ spec:
     config:
       service: |
         [SERVICE]
-            Flush                   {{ .Values.flush }}
-            Log_Level               {{ .Values.logLevel }}
-            Grace                   20
-            Daemon                  off
-            Parsers_File            custom_parsers.conf
-            HTTP_Server             On
-            HTTP_Listen             0.0.0.0
-            HTTP_Port               {{ .Values.metricsPort }}
-            Health_Check            On
-            HC_Errors_Count         5
-            HC_Retry_Failure_Count  5
-            HC_Period               5
-            storage.metrics         true
-            storage.path            /var/log/flb_buffer
-            storage.pause_on_chunks_overlimit On
-            scheduler.cap           600
+            Flush                               {{ .Values.flush }}
+            Log_Level                           {{ .Values.logLevel }}
+            Grace                               20
+            Daemon                              off
+            Parsers_File                        custom_parsers.conf
+            HTTP_Server                         On
+            HTTP_Listen                         0.0.0.0
+            HTTP_Port                           {{ .Values.metricsPort }}
+            Health_Check                        On
+            HC_Errors_Count                     5
+            HC_Retry_Failure_Count              5
+            HC_Period                           5
+            storage.metrics                     true
+            storage.path                        /var/log/flb_buffer
+            storage.pause_on_chunks_overlimit   On
+            storage.max_chunks_up               128
+            storage.total_limit_size            1G
+            scheduler.cap                       600
 
       ## https://docs.fluentbit.io/manual/pipeline/inputs
       inputs: |
@@ -68,12 +70,14 @@ spec:
             Parser                cri
             multiline.parser      docker, cri
             DB                    /var/log/flb_kube_containers.db
-            storage.type          memrb
-            Mem_Buf_Limit         150MB
+            DB.locking            On
+            storage.type          memory
+            Mem_Buf_Limit         50MB
             Buffer_Chunk_Size     256k
             Buffer_Max_Size       10M
             Skip_Long_Lines       On
             Skip_Empty_Lines      On
+            Read_from_Head        On
             Refresh_Interval      10
         
         [INPUT]
@@ -82,8 +86,9 @@ spec:
             Tag                   in.host.auth.log.local
             Path                  /var/log/auth.log
             DB                    /var/log/flb_host_auth_log.db
-            storage.type          memrb
-            Mem_Buf_Limit         150MB
+            DB.locking            On
+            storage.type          memory
+            Mem_Buf_Limit         50MB
             Buffer_Chunk_Size     256k
             Buffer_Max_Size       10M
             Skip_Empty_Lines      On
@@ -102,8 +107,9 @@ spec:
             Systemd_Filter        _SYSTEMD_UNIT=fstrim.service
             Systemd_Filter        _SYSTEMD_UNIT=iscsid.service
             DB                    /var/log/flb_host_systemd.db
-            storage.type          memrb
-            Mem_Buf_Limit         150MB
+            Lowercase             On
+            storage.type          memory
+            Mem_Buf_Limit         50MB
             Strip_Underscores     On
 
         [INPUT]
@@ -113,12 +119,14 @@ spec:
             kube_ca_file          /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
             kube_token_file       /var/run/secrets/kubernetes.io/serviceaccount/token
             db                    /var/log/flb_kube_events.db
+            storage.type          memory
+            Mem_Buf_Limit         50MB
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
       filters: |
         [FILTER]
             Name                  modify
-            Alias                 in._flb_processed
+            Alias                 in.set._flb_processed
             Match                 in.*
             Set                   _flb_processed yes
         
@@ -192,7 +200,7 @@ spec:
             Alias                 in.host.systemd
             Emitter_Name          in.host.systemd
             Match                 in.host.systemd.unit.*
-            Rule                  $_flb_processed ^. in.host.systemd.$SYSLOG_IDENTIFIER.$HOSTNAME false
+            Rule                  $_flb_processed ^. in.host.systemd.$syslog_identifier.$hostname false
         
         [FILTER]
             Name                  rewrite_tag
@@ -242,7 +250,6 @@ spec:
             Name                  rewrite_tag
             Alias                 final-structured-bypass
             Emitter_Name          final-structured-bypass
-            Emitter_Storage.type  filesystem
             Match                 structured.*
             Rule                  $_processing_status bypass final.structured false
             
@@ -498,7 +505,7 @@ spec:
 
         [FILTER]
             Name                  modify
-            Alias                 structured.rename.log-msg.final
+            Alias                 structured.rename.log-msg
             Match                 final.structured
             Rename                log     message
             Rename                msg     message
@@ -572,7 +579,7 @@ spec:
         
         [FILTER]
             Name                  lua
-            Alias                 structured.lua.statuscode_level.final
+            Alias                 structured.lua.statuscode_level
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  statuscode_level
@@ -610,8 +617,8 @@ spec:
             tls.verify                Off
             Trace_Error               On
             Buffer_Size               False
-            storage.total_limit_size  200M
-    
+            Workers                   4
+        
         [OUTPUT]
             Name                      es
             Alias                     out.es.raw
@@ -629,7 +636,7 @@ spec:
             tls.verify                Off
             Trace_Error               On
             Buffer_Size               False
-            storage.total_limit_size  200M
+            Workers                   4
 
       ## https://docs.fluentbit.io/manual/pipeline/parsers
       customParsers: |
