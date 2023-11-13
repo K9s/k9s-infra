@@ -602,6 +602,7 @@ spec:
             Write_Operation           upsert
             Id_Key                    _flb_id
             Suppress_Type_Name        On
+            Replace_Dots              On
             Port                      9200
             Time_Key_Nanos            On
             Retry_Limit               10
@@ -620,6 +621,7 @@ spec:
             Write_Operation           upsert
             Id_Key                    _flb_id
             Suppress_Type_Name        On
+            Replace_Dots              On
             Port                      9200
             Time_Key_Nanos            On
             Retry_Limit               10
