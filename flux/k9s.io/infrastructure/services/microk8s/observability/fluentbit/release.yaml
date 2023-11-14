@@ -335,12 +335,12 @@ spec:
         
         [FILTER]
             Name                  parser
-            Alias                 structured.parse.greedy
+            Alias                 structured.parse.greedy-json-msg
             Match                 structured.reprocess.*
             Key_Name              log
             Reserve_Data          On
             Preserve_Key          Off
-            Parser                greedy-msg
+            Parser                greedy-json-msg
         
         [FILTER]
             Name                  parser
@@ -370,12 +370,12 @@ spec:
     
         [FILTER]
             Name                  parser
-            Alias                 structured.parse.pass-through
+            Alias                 structured.parse.pass-through-msg
             Match                 structured.*
             Key_Name              msg
             Reserve_Data          On
             Preserve_Key          Off
-            Parser                pass-through
+            Parser                pass-through-msg
     
         [FILTER]
             Name                  lua
@@ -641,7 +641,7 @@ spec:
             Time_Format %Y-%m-%dT%H:%M:%S.%L%z
         
         [PARSER]
-            Name        greedy-msg
+            Name        greedy-json-msg
             Format      regex
             Regex       ^((?<json>{.*})|\[(?<target>[^ ]*)\])(?<msg>.+)?$
         
@@ -759,7 +759,7 @@ spec:
             Time_Format %b %d %H:%M:%S
     
         [PARSER]
-            Name                pass-through
+            Name                pass-through-msg
             Format              regex
             Regex               ^(?<msg>.*)$
             Decode_Field_As     escaped     msg
