@@ -643,7 +643,7 @@ spec:
         [PARSER]
             Name        greedy-msg
             Format      regex
-            Regex       ^((?<json>{.*})|\[(?<source>[^ ]*)\])(?<msg>.+)?$
+            Regex       ^((?<json>{.*})|\[(?<target>[^ ]*)\])(?<msg>.+)?$
         
         [PARSER]
             Name        cri
