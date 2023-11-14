@@ -805,12 +805,11 @@ spec:
             record["_log_remaining"] = nil
           end
           
-          -- This prefixes _processing_status with each item in _processed this is to make troubleshooting easier
-          local processed = {}
-          for k, v in pairs(record["_processed"]) do
-            table.insert(processed, record["_processing_status"] .. ":" .. v)
+          if record["_processing_status"] == "unparsed" then
+            record["_last_processed"] = record["_processing_status"]
+          else
+            record["_last_processed"] = record["_processing_status"].. ":" .. record["_last_processed"]
           end
-          record["_processed"] = processed
           
           return 2, timestamp, record
         end
@@ -820,8 +819,10 @@ spec:
           if not record["_processed"] or type(record["_processed"]) == "string" then 
             record["_processed"] = {}
             table.insert(record["_processed"], "raw")
+            record["_last_processed"] = "raw"
           end
-          if record["_last_processed"] then
+        
+          if record["_last_processed"] ~= "raw" then
             table.insert(record["_processed"], record["_last_processed"])
           end
         
