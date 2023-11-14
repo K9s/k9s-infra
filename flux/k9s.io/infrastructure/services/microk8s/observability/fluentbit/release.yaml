@@ -215,7 +215,7 @@ spec:
             Match                 *
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  flb_tags
-            type_array_key        tags
+            type_array_key        _flb_tags
             enable_flb_null       On
         
         [FILTER]
@@ -230,7 +230,7 @@ spec:
             Alias                 raw.ingest
             Emitter_Name          raw.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. raw.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4] true
+            Rule                  $_flb_processed ^. raw.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] true
             
         # Structured Logs
         [FILTER]
@@ -238,20 +238,13 @@ spec:
             Alias                 structured.ingest
             Emitter_Name          structured.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. structured.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4] false
+            Rule                  $_flb_processed ^. structured.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] false
             
         [FILTER]
             Name                  modify
             Alias                 structured.kube.events._processing_status
             Match                 structured.ingest.kube.events.*
             Set                   _processing_status   bypass
-        
-        [FILTER]
-            Name                  rewrite_tag
-            Alias                 final-structured-bypass
-            Emitter_Name          final-structured-bypass
-            Match                 structured.*
-            Rule                  $_processing_status bypass final.structured false
             
         [FILTER]
             Name                  modify
@@ -266,26 +259,29 @@ spec:
             Alias                 structured.copy._raw_log
             Match                 structured.ingest.*
             Copy                  log _raw_log
-    
-        ### Multiline Processing START
 
         [FILTER]
             name                  multiline
             Alias                 structured.multiline
             Emitter_Name          structured.multiline
-            match                 structured.ingress.*
+            match                 structured.ingest.*
             multiline.key_content log
             multiline.parser      cri, docker, go, python, java
             buffer                On
-
+        
         [FILTER]
-            Name                  modify
-            Alias                 structured.modify.multiline
-            Match                 structured.multiline
-            Set                   _last_processed multiline
-            Set                   _processed_multiline true
-
-        ### Multiline Reprocessing END
+            Name                  lua
+            Alias                 structured.ingest.multiline.processed
+            Match                 structured.ingest.*
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  multiline_processed
+        
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 final-structured-bypass
+            Emitter_Name          final-structured-bypass
+            Match                 structured.*
+            Rule                  $_processing_status bypass final.structured false
         
         [FILTER]
             Name                  parser
@@ -387,7 +383,6 @@ spec:
             Match                 structured.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
-            type_array_key        tags
             enable_flb_null       On
         
         # Reprocessing Start
@@ -554,7 +549,6 @@ spec:
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
-            type_array_key        tags
             enable_flb_null       On
         
         [FILTER]
@@ -583,7 +577,6 @@ spec:
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  statuscode_level
-            type_array_key        tags
             enable_flb_null       On
         
         [FILTER]
@@ -778,6 +771,26 @@ spec:
            return from > #s and "" or s:match(".*%S", from)
         end
         
+        local function has_value (tab, val)
+            for index, value in ipairs(tab) do
+                if value == val then
+                    return true
+                end
+            end
+        
+            return false
+        end
+        
+        function multiline_processed(tag, timestamp, record)
+          if record["_raw_log"] and record["log"] and record["_raw_log"] ~= record["log"] then
+            record["_last_processed"] = "multiline"
+            record["_processed_multiline"] = "true"
+            record["_processing_status"] = "bypass"
+          end
+        
+          return 2, timestamp, record
+        end
+        
         function set_processing_status(tag, timestamp, record)
           -- Set _processing_status field to current state of parsing
           if record["_processing_status"] ~= "bypass" and record["_log_remaining"] and record["_raw_log"] ~= nil then
@@ -813,27 +826,19 @@ spec:
           end
         
           -- Extend _flb_tags field with tag
-          if not record["_flb_tags"] then 
-            record["_flb_tags"] = {}
+          if not record["_flb_tags"] or type(record["_flb_tags"]) == "string" then record["_flb_tags"] = {} end
+          
+          local tag = string.lower(tag)
+          if has_value(record["_flb_tags"], tag) == false then
+            table.insert(record["_flb_tags"], tag)
           end
-          table.insert(record["_flb_tags"], string.lower(tag))
-        
+          
           return 2, timestamp, record
-        end
-        
-        local function has_value (tab, val)
-            for index, value in ipairs(tab) do
-                if value == val then
-                    return true
-                end
-            end
-        
-            return false
         end
         
         function statuscode_level(tag, timestamp, record)
             if record["level"] == nil and record["statuscode"] then
-                statuscode = tonumber(record["statuscode"])
+                local statuscode = tonumber(record["statuscode"])
                 if statuscode then
                     if statuscode >= 500 and statuscode < 600 then
                         record["level"] = "FATAL"
@@ -888,7 +893,7 @@ spec:
                     --Add field if loglevel is not one of the expected values create field for troubleshooting
                     if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE', 'CRITICAL', 'NOTICE'}, value) then
                         _record["_invalid_level"] = value
-                        _record["level"] = 'INVALID'
+                        _record["level"] = "INVALID"
                     end
                 end
         
