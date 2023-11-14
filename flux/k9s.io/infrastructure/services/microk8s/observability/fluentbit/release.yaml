@@ -29,7 +29,7 @@ spec:
 
     rbac:
       create: true
-      nodeAccess: false
+      nodeAccess: true
       eventsAccess: true
 
     service:
