@@ -98,9 +98,11 @@ spec:
             Name                  systemd
             Alias                 in.host.systemd.unit
             Tag                   in.host.systemd.unit.*
-            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-kicker.service 
+            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-kicker.service
+            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-apiserver-proxy.service
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-cluster-agent.service
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-containerd.service
+            Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-etcd.service
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-k8s-dqlite.service
             Systemd_Filter        _SYSTEMD_UNIT=snap.microk8s.daemon-kubelite.service
             Systemd_Filter        _SYSTEMD_UNIT=ssh.service
