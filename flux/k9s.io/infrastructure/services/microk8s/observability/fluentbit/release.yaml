@@ -34,9 +34,9 @@ spec:
 
     service:
       annotations:
-       prometheus.io/path: "/api/v1/metrics/prometheus"
-       prometheus.io/port: "2020"
-       prometheus.io/scrape: "true"
+        prometheus.io/path: "/api/v1/metrics/prometheus"
+        prometheus.io/port: "2020"
+        prometheus.io/scrape: "true"
 
     config:
       service: |
@@ -163,7 +163,7 @@ spec:
             Operation             lift
             Nested_under          kubernetes
             Add_prefix            kubernetes_
-    
+        
         [FILTER]
             Name                  nest
             Alias                 lift.kube.containers.labels
@@ -171,7 +171,7 @@ spec:
             Operation             lift
             Nested_under          kubernetes_labels
             Add_prefix            kubernetes_labels/
-    
+        
         [FILTER]
             Name                  nest
             Alias                 lift.kube.containers.annotations
@@ -196,7 +196,7 @@ spec:
             Emitter_Name          in.kube.containers
             Match                 in.kube.containers.cluster.*
             Rule                  $_flb_processed ^. in.kube.containers.$kubernetes_namespace_name.$kubernetes_container_name.$kubernetes_pod_name false
-    
+        
         [FILTER]
             Name                  rewrite_tag
             Alias                 in.host.systemd
@@ -233,7 +233,7 @@ spec:
             Emitter_Name          raw.ingest
             Match                 in.*
             Rule                  $_flb_processed ^. raw.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] true
-            
+        
         # Structured Logs
         [FILTER]
             Name                  rewrite_tag
@@ -241,13 +241,13 @@ spec:
             Emitter_Name          structured.ingest
             Match                 in.*
             Rule                  $_flb_processed ^. structured.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] false
-            
+        
         [FILTER]
             Name                  modify
             Alias                 structured.kube.events._processing_status
             Match                 structured.ingest.kube.events.*
             Set                   _processing_status   bypass
-            
+        
         [FILTER]
             Name                  modify
             Alias                 structured.rename.log
@@ -370,7 +370,7 @@ spec:
             Rename                @timestamp  _log_timestamp
             Rename                _id         _log_id
             Rename                _index      _log_index
-    
+        
         [FILTER]
             Name                  parser
             Alias                 structured.parse.pass-through-msg
@@ -379,7 +379,7 @@ spec:
             Reserve_Data          On
             Preserve_Key          Off
             Parser                pass-through-msg
-    
+        
         [FILTER]
             Name                  lua
             Alias                 structured.lua.normalize
@@ -438,21 +438,6 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 structured.gate.reprocess.msg
-            Match                 structured.*
-            Rename                msg message
-            Hard_rename           msg _msg
-            Condition             Key_exists  _processed_msg
-        
-        [FILTER]
-            Name                  rewrite_tag
-            Alias                 structured.reprocess.msg
-            Emitter_Name          structured.reprocess.msg
-            Match                 structured.*
-            Rule                  $msg ^. structured.reprocess.msg false
-        
-        [FILTER]
-            Name                  modify
             Alias                 structured.gate.reprocess.log
             Match                 structured.*
             Rename                log message
@@ -465,6 +450,21 @@ spec:
             Emitter_Name          structured.reprocess.log
             Match                 structured.*
             Rule                  $log ^. structured.reprocess.log false
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.gate.reprocess.msg
+            Match                 structured.*
+            Rename                msg message
+            Hard_rename           msg _msg
+            Condition             Key_exists  _processed_msg
+        
+        [FILTER]
+            Name                  rewrite_tag
+            Alias                 structured.reprocess.msg
+            Emitter_Name          structured.reprocess.msg
+            Match                 structured.*
+            Rule                  $msg ^. structured.reprocess.msg false
         
         [FILTER]
             Name                  modify
@@ -523,6 +523,21 @@ spec:
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  set_processing_status
             enable_flb_null       On
+
+        [FILTER]
+            Name                  nest
+            Alias                 structured.lift.source
+            Match                 final.structured
+            Operation             lift
+            Nested_under          source
+        
+        [FILTER]
+            Name                  nest
+            Alias                 structured.lift.params
+            Match                 final.structured
+            Operation             lift
+            Nested_under          params
+            Add_prefix            params/
 
         [FILTER]
             Name                  nest
@@ -653,7 +668,7 @@ spec:
             Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
             Time_Key    time
             Time_Format %Y-%m-%dT%H:%M:%S.%L%z
-            
+        
         [PARSER]
             Name        apache
             Format      regex
@@ -675,7 +690,7 @@ spec:
             Name        apache_error
             Format      regex
             Regex       ^\[[^ ]* (?<time>[^\]]*)\] \[(?<level>[^\]]*)\](?: \[pid (?<pid>[^\]]*)\])?( \[client (?<client>[^\]]*)\])? (?<msg>.*)$
-    
+        
         [PARSER]
             # https://rubular.com/r/IhIbCAIs7ImOkc
             Name        k8s-nginx-ingress
@@ -687,7 +702,7 @@ spec:
         [PARSER]
             Name        json
             Format      json
-    
+        
         [PARSER]
             Name        logfmt
             Format      logfmt
@@ -696,7 +711,7 @@ spec:
             Name        kibana-logs
             Format      regex
             Regex       ^(?<method>POST|GET|PUT|DELETE) (?<endpoint>[^ ]*) (?<code>[^ ]*) (?<latency_ms>[^ ]*)ms| \- (?<size>\d*.\d*|\d*)(?<size_unit>[^ ]*)$
-    
+        
         [PARSER]
             # https://rubular.com/r/KKkEvIYKEvj13a
             Name        kube-logs
@@ -704,26 +719,26 @@ spec:
             Regex       ^(?<severity>W|I|E|F)+(?<code>\d{4})+\s(?<time>\d*:\d*:\d*\.\d*)\s*(?<pid>[^\]]*)\s(?<file>\w*\.\w*):(?<line>\d*)\](?<msg>.*)$
             Time_Key    time
             Time_Format %H:%M:%S.%L
-    
+        
         [PARSER]
             Name        containerd
             Format      regex
             Regex       ^(?<time>[^\]]*) \[(?<level>[A-Z]*)\]\[([^ ]*)\] (?<file>[^ ]*) (?<line>[\d ]*): (?<msg>.*)
             Time_Key    time
             Time_Format %Y-%m-%d %H:%M:%S.%L
-    
+        
         [PARSER]
             Name        simple-level-msg
             Format      regex
             Regex       ^#(?<level>.*):(?<msg>.*)$
-    
+        
         [PARSER]
             Name        simple-datetime-with-level
             Format      regex
             Regex       ^\[(?<time>\d*-\d*-\d* \d*:\d*:\d*:\d*) (?<level>[^ ]*)\](?<msg>.*)$
             Time_Key    time
             Time_Format %Y-%m-%d %H:%M:%S:%L
-    
+        
         [PARSER]
             Name        simple-datetime-msg-1
             Format      regex
@@ -737,14 +752,14 @@ spec:
             Regex       ^[\[]?(?<time>\d*\/\d*\/\d* \d*:\d*:\d*)[\]]?(?<msg>.*)$
             Time_Key    time
             Time_Format %Y/%m/%d %H:%M:%S
-    
+        
         [PARSER]
             Name        minecraft-java-msg
             Format      regex
             Regex       ^\[(?<time>\d*:\d*:\d*)\] \[(?<thread>[^\]]*)\/(?<level>[^\]]*)\]: (?<msg>.*)?
             Time_Key    time
             Time_Format %H:%M:%S
-    
+        
         [PARSER]
             Name   redis
             Format regex
@@ -752,14 +767,14 @@ spec:
             Time_Key time
             Time_Format %d %b %Y %H:%M:%S.%L
             Types pid:integer role:string msg:string level:string
-    
+        
         [PARSER]
             Name    auth-log
             Format  regex
             Regex   ^(?<time>\w+\s+\d+ (\d+:){2}\d+) (?<host>[\S]*) (?<program>[^\[\] ]*)(\[(?<pid>\d*)\])?: (?<msg>.*)$
             Time_Key time
             Time_Format %b %d %H:%M:%S
-    
+        
         [PARSER]
             Name                pass-through-msg
             Format              regex
@@ -769,18 +784,18 @@ spec:
     luaScripts:
       sanitize_records.lua: |
         function all_trim(s)
-           local from = s:match"^%s*()"
-           return from > #s and "" or s:match(".*%S", from)
+          local from = s:match"^%s*()"
+          return from > #s and "" or s:match(".*%S", from)
         end
         
         local function has_value (tab, val)
-            for index, value in ipairs(tab) do
-                if value == val then
-                    return true
-                end
+          for index, value in ipairs(tab) do
+            if value == val then
+              return true
             end
+          end
         
-            return false
+          return false
         end
         
         function multiline_processed(tag, timestamp, record)
@@ -806,13 +821,13 @@ spec:
             record["_processing_status"] = "complete"
             record["_log_remaining"] = nil
           end
-          
+        
           if record["_processing_status"] == "unparsed" then
             record["_last_processed"] = record["_processing_status"]
           else
             record["_last_processed"] = record["_processing_status"].. ":" .. record["_last_processed"]
           end
-          
+        
           return 2, timestamp, record
         end
         
@@ -830,98 +845,96 @@ spec:
         
           -- Extend _flb_tags field with tag
           if not record["_flb_tags"] or type(record["_flb_tags"]) == "string" then record["_flb_tags"] = {} end
-          
+        
           local tag = string.lower(tag)
           if has_value(record["_flb_tags"], tag) == false then
             table.insert(record["_flb_tags"], tag)
           end
-          
+        
           return 2, timestamp, record
         end
         
         function statuscode_level(tag, timestamp, record)
-            if record["level"] == nil and record["statuscode"] then
-                local statuscode = tonumber(record["statuscode"])
-                if statuscode then
-                    if statuscode >= 500 and statuscode < 600 then
-                        record["level"] = "FATAL"
-                    elseif statuscode >= 400 then
-                        record["level"] = "ERROR"
-                    elseif statuscode >= 300 then
-                        record["level"] = "WARN"
-                    elseif statuscode >= 200 then
-                        record["level"] = "INFO"
-                    elseif statuscode >= 100 then
-                        record["level"] = "DEBUG"
-                    end
-                end
+          if record["level"] == nil and record["statuscode"] then
+            local statuscode = tonumber(record["statuscode"])
+            if statuscode then
+              if statuscode >= 500 and statuscode < 600 then
+                record["level"] = "FATAL"
+              elseif statuscode >= 400 then
+                record["level"] = "ERROR"
+              elseif statuscode >= 300 then
+                record["level"] = "WARN"
+              elseif statuscode >= 200 then
+                record["level"] = "INFO"
+              elseif statuscode >= 100 then
+                record["level"] = "DEBUG"
+              end
             end
+          end
         
-            return 2, timestamp, record
+          return 2, timestamp, record
         end
         
-        function normalize(tag, timestamp, record)        
-            local _record = {}
-            for field, value in pairs(record) do
-                --Normalize field value and ensure basic types are preserved
-                if type(value) == "string" then
-                   value = all_trim(value)
+        function normalize(tag, timestamp, record)
+          local _record = {}
+          for field, value in pairs(record) do
+            --Normalize field value and ensure basic types are preserved
+            if type(value) == "string" then
+              value = all_trim(value)
         
-                   number = tonumber(value)
-                   if number then
-                       value = number
-                   else
-                       value = tostring(value)
-                   end
+              number = tonumber(value)
+              if number then
+                value = number
+              end
         
-                   if value == "true" then value = true end
-                   if value == "false" then value = false end
-                end
-                --Ensure field value is lower() then replace spaces and dots with underscores
-                field = string.lower(field):gsub("%s", "_"):gsub("%.", "_")
+              if value == "true" then value = true end
+              if value == "false" then value = false end
+            end
+            --Ensure field value is lower() then replace spaces and dots with underscores
+            field = string.lower(field):gsub("%s", "_"):gsub("%.", "_")
         
-                --Normalize level field value to standard log levels
-                if field == "level" then
-                    value = string.upper(value)
-                    
-                    -- Redis log levels https://gist.github.com/jgould22/f42ad756fc07143e2a104d7844f39b12
-                    if value == "F" then value = "FATAL" end
-                    if value == "E" or value == "ERR" or value == "EROR" then value = "ERROR" end
-                    if value == "W" or value == "*" or value == "WARNING" then value = "WARN" end
-                    if value == "I" or value == "-" then value = "INFO" end
-                    if value == "D" or value == "." then value = "DEBUG" end
-                    if value == "T" then value = "TRACE" end
-                    if value == "#" then value = "NOTICE" end
-                    
-                    --Add field if loglevel is not one of the expected values create field for troubleshooting
-                    if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE', 'CRITICAL', 'NOTICE'}, value) then
-                        _record["_invalid_level"] = value
-                        _record["level"] = "INVALID"
-                    end
-                end
+            --Normalize level field value to standard log levels
+            if field == "level" then
+              value = string.upper(value)
         
-                --Normalize method field value
-                if field == "method" then
-                    value = string.upper(value)
-                end
-                
-                --Map {} to nil (empty)
-                if (type(value) == "table" and next(value) == nil) or value == "{}" then
-                    value = nil
-                end
-                
-                --Ensure field name has valid name.  If any field is invalid add to _rejected_fields field for troubleshooting
-                if field:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") then
-                    _record[field] = value
-                else
-                    if type(_record["_rejected_fields"]) ~= "table" then _record["_rejected_fields"] = {} end
-                    table.insert(_record["_rejected_fields"], field)
-                end
+              -- Redis log levels https://gist.github.com/jgould22/f42ad756fc07143e2a104d7844f39b12
+              if value == "F" then value = "FATAL" end
+              if value == "E" or value == "ERR" or value == "EROR" then value = "ERROR" end
+              if value == "W" or value == "*" or value == "WARNING" then value = "WARN" end
+              if value == "I" or value == "-" then value = "INFO" end
+              if value == "D" or value == "." then value = "DEBUG" end
+              if value == "T" then value = "TRACE" end
+              if value == "#" then value = "NOTICE" end
         
-                --print("field:", field, "Value:", _record[field], "Value:", type(_record[field]))
+              --Add field if loglevel is not one of the expected values create field for troubleshooting
+              if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE', 'CRITICAL', 'NOTICE'}, value) then
+                _record["_invalid_level"] = value
+                _record["level"] = "INVALID"
+              end
             end
         
-            --_record["_ingest_timestamp"] = os.time(os.date("!*t"))
+            --Normalize method field value
+            if field == "method" then
+              value = string.upper(value)
+            end
         
-            return 2, timestamp, _record
+            --Map {} to nil (empty)
+            if (type(value) == "table" and next(value) == nil) or value == "{}" then
+              value = nil
+            end
+        
+            --Ensure field name has valid name.  If any field is invalid add to _rejected_fields field for troubleshooting
+            if field:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") then
+              _record[field] = value
+            else
+              if type(_record["_rejected_fields"]) ~= "table" then _record["_rejected_fields"] = {} end
+              table.insert(_record["_rejected_fields"], field)
+            end
+        
+            --print("field:", field, "Value:", _record[field], "Value:", type(_record[field]))
+          end
+        
+          --_record["_ingest_timestamp"] = os.time(os.date("!*t"))
+        
+          return 2, timestamp, _record
         end
