@@ -415,6 +415,12 @@ spec:
         
         [FILTER]
             Name                  modify
+            Alias                 structured.rename.reprocess.log.msg
+            Match                 structured.reprocess.msg
+            Rename                log   msg
+        
+        [FILTER]
+            Name                  modify
             Alias                 structured.cleanup._log_remaining.log
             Match                 structured.*
             Remove                _log_remaining
@@ -507,13 +513,6 @@ spec:
             Rename                msg     message
             Rename                _log    message
             Rename                _msg    message
-
-        [FILTER]
-            Name                  modify
-            Alias                 structured.remove._log_remaining.log
-            Match                 final.structured
-            Remove                _log_remaining
-            Condition             Key_exists    _processed_msg
         
         [FILTER]
             Name                  lua
