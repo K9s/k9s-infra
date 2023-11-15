@@ -582,6 +582,8 @@ spec:
             Rename                requestmethod     method
             Rename                agent             user-agent
             Rename                user_agent        user-agent
+            Rename                ua                user-agent
+            Rename                useragent         user-agent
             Rename                errors            error
             Rename                err               error
             Rename                host              hostname
