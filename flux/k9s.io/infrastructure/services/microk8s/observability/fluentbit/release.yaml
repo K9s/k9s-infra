@@ -212,13 +212,26 @@ spec:
             Rule                  $_flb_processed ^. in.kube.events.$type.$reason.$action false
         
         [FILTER]
+            Name                  modify
+            Alias                 structured.rename.message.msg
+            Match                 structured.*
+            Rename                message   msg
+            Rename                MESSAGE   msg
+        
+        [FILTER]
             Name                  lua
             Alias                 flb_tags
             Match                 *
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  flb_tags
-            type_array_key        _flb_tags
+            type_array_key        _flb_tags _processed _parsed
             enable_flb_null       On
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.rename.msg.log
+            Match                 structured.*
+            Rename                msg       log
         
         [FILTER]
             Name                  record_modifier
@@ -250,11 +263,16 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 structured.rename.log
+            Alias                 structured.cleanup._log_remaining_last
             Match                 structured.*
-            Rename                message   log
-            Rename                MESSAGE   log
-            Rename                msg       log
+            Remove                _log_remaining_last
+            Condition             Key_does_not_exist    _log_remaining
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.set._log_remaining_last
+            Match                 structured.*
+            Hard_rename           _log_remaining    _log_remaining_last
         
         [FILTER]
             Name                  modify
@@ -386,11 +404,19 @@ spec:
             Match                 structured.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
+            type_array_key        _rejected_fields
             enable_flb_null       On
         
         # Reprocessing Start
         
         ## Set reprocessing status records
+        
+        [FILTER]
+            Name                  modify
+            Alias                 structured.modify.process.ingest
+            Match                 structured.ingest.*
+            Set                   _last_processed ingest
+            Set                   _processed_ingest true
         
         [FILTER]
             Name                  modify
@@ -423,15 +449,9 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 structured.cleanup._log_remaining.log
-            Match                 structured.*
-            Remove                _log_remaining
-            Condition             Key_does_not_exist    log
-        
-        [FILTER]
-            Name                  modify
             Alias                 structured.create._log_remaining
             Match                 structured.*
+            Hard_copy             msg _log_remaining
             Hard_copy             log _log_remaining
         
         ## Reprocessing rewrite tags
@@ -566,6 +586,7 @@ spec:
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
+            type_array_key        _rejected_fields
             enable_flb_null       On
         
         [FILTER]
@@ -603,6 +624,8 @@ spec:
             Alias                 remove.flb_processed
             Match                 final.*
             Remove                _flb_processed
+            Remove                _last_processed
+            Remove                _log_remaining_last
         
         #[FILTER]
         #    Name    grep
@@ -803,7 +826,7 @@ spec:
         function multiline_processed(tag, timestamp, record)
           if record["_raw_log"] and record["log"] and record["_raw_log"] ~= record["log"] then
             record["_last_processed"] = "multiline"
-            record["_processed_multiline"] = "true"
+            record["_processed_multiline"] = true
             record["_processing_status"] = "bypass"
           end
         
@@ -812,44 +835,61 @@ spec:
         
         function set_processing_status(tag, timestamp, record)
           -- Set _processing_status field to current state of parsing
-          if record["_processing_status"] ~= "bypass" and record["_log_remaining"] and record["_raw_log"] ~= nil then
+          if record["_processing_status"] ~= "bypass" 
+                and record["_log_remaining"]
+                and record["_raw_log"] ~= nil then
             if record["_log_remaining"] == record["_raw_log"] then
-              record["_processing_status"] = "unparsed"
+              processing_status = "unparsed"
               record["_log_remaining"] = nil
             else
-              record["_processing_status"] = "incomplete"
+              if record["_processed"][#record["_processed"]] == "msg" then
+                processing_status = "parsed"
+                record["_log_remaining"] = nil
+              else
+                processing_status = "partial"
+              end
             end
           else
-            record["_processing_status"] = "complete"
+            processing_status = "parsed"
             record["_log_remaining"] = nil
           end
         
-          if record["_processing_status"] == "unparsed" then
-            record["_last_processed"] = record["_processing_status"]
+          last_parsed = record["_parsed"][#record["_parsed"]]
+          if last_parsed and last_parsed ~= "ingest" and last_parsed ~= "bypass" then
+            processing_suffix = ":" .. last_parsed
           else
-            record["_last_processed"] = record["_processing_status"].. ":" .. record["_last_processed"]
-          end
+            processing_suffix = ""
+          end 
+        
+          record["_processing_status"] = processing_status .. processing_suffix
         
           return 2, timestamp, record
         end
         
         function flb_tags(tag, timestamp, record)
-          -- Extend _processed field with the value of _last_processed
-          if not record["_processed"] or type(record["_processed"]) == "string" then 
-            record["_processed"] = {}
-            table.insert(record["_processed"], "raw")
-            record["_last_processed"] = "raw"
-          end
+          --Ensure needed fields are ready
+          if type(record["_processed"]) ~= "table" then record["_processed"] = {} end
+          if type(record["_parsed"]) ~= "table" then record["_parsed"] = {} end
+          if type(record["_flb_tags"]) ~= "table" then record["_flb_tags"] = {} end
         
-          if record["_last_processed"] ~= "raw" then
+          if record["_last_processed"] then
+            -- Extend _parsed but only if processing had an effect
+            if record["_log_remaining"] == nil or 
+                (record["_log_remaining"] ~= record["_raw_log"] and record["_log_remaining_last"] ~= record["_log_remaining"]) then
+              table.insert(record["_parsed"], record["_last_processed"])
+            end
             table.insert(record["_processed"], record["_last_processed"])
           end
         
           -- Extend _flb_tags field with tag
-          if not record["_flb_tags"] or type(record["_flb_tags"]) == "string" then record["_flb_tags"] = {} end
-        
           local tag = string.lower(tag)
           if has_value(record["_flb_tags"], tag) == false then
+            -- Set _parsed and _processed if processing bypassed
+            if record["_processing_status"] == "bypass" then
+              table.insert(record["_parsed"], record["_processing_status"])
+              table.insert(record["_processed"], record["_processing_status"])
+            end
+        
             table.insert(record["_flb_tags"], tag)
           end
         
