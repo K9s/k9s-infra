@@ -224,7 +224,7 @@ spec:
             Match                 *
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  flb_tags
-            type_array_key        _flb_tags _processed _parsed
+            type_array_key        _flb_tags _flb_processed _flb_parsed
             enable_flb_null       On
         
         [FILTER]
@@ -251,22 +251,22 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 structured.kube.events._processing_status
+            Alias                 structured.kube.events._flb_processing_status
             Match                 structured.ingest.kube.events.*
-            Set                   _processing_status   bypass
+            Set                   _flb_processing_status   bypass
         
         [FILTER]
             Name                  modify
-            Alias                 structured.cleanup._log_remaining_last
+            Alias                 structured.cleanup.__flb_log_remaining_last
             Match                 structured.*
-            Remove                _log_remaining_last
-            Condition             Key_does_not_exist    _log_remaining
+            Remove                __flb_log_remaining_last
+            Condition             Key_does_not_exist    _flb_log_remaining
         
         [FILTER]
             Name                  modify
-            Alias                 structured.set._log_remaining_last
+            Alias                 structured.set.__flb_log_remaining_last
             Match                 structured.*
-            Hard_rename           _log_remaining    _log_remaining_last
+            Hard_rename           _flb_log_remaining    __flb_log_remaining_last
         
         [FILTER]
             Name                  modify
@@ -296,7 +296,7 @@ spec:
             Alias                 final-structured-bypass
             Emitter_Name          final-structured-bypass
             Match                 structured.*
-            Rule                  $_processing_status bypass final.structured false
+            Rule                  $_flb_processing_status bypass final.structured false
         
         [FILTER]
             Name                  parser
@@ -398,7 +398,7 @@ spec:
             Match                 structured.*
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
-            type_array_key        _rejected_fields
+            type_array_key        _flb_rejected_fields
             enable_flb_null       On
         
         # Reprocessing Start
@@ -409,29 +409,29 @@ spec:
             Name                  modify
             Alias                 structured.modify.process.ingest
             Match                 structured.ingest.*
-            Set                   _last_processed ingest
-            Set                   _processed_ingest true
+            Set                   __flb_last_processed ingest
+            Set                   _flb_processed_ingest true
         
         [FILTER]
             Name                  modify
             Alias                 structured.modify.reprocess.logfmt
             Match                 structured.reprocess.logfmt
-            Set                   _last_processed logfmt
-            Set                   _processed_logfmt true
+            Set                   __flb_last_processed logfmt
+            Set                   _flb_processed_logfmt true
         
         [FILTER]
             Name                  modify
             Alias                 structured.modify.reprocess.log
             Match                 structured.reprocess.log
-            Set                   _last_processed log
-            Set                   _processed_log true
+            Set                   __flb_last_processed log
+            Set                   _flb_processed_log true
         
         [FILTER]
             Name                  modify
             Alias                 structured.modify.reprocess.msg
             Match                 structured.reprocess.msg
-            Set                   _last_processed msg
-            Set                   _processed_msg true
+            Set                   __flb_last_processed msg
+            Set                   _flb_processed_msg true
         
         ## Reprocessing debug
         
@@ -443,10 +443,10 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 structured.create._log_remaining
+            Alias                 structured.create._flb_log_remaining
             Match                 structured.*
-            Hard_copy             msg _log_remaining
-            Hard_copy             log _log_remaining
+            Hard_copy             msg _flb_log_remaining
+            Hard_copy             log _flb_log_remaining
         
         ## Reprocessing rewrite tags
         
@@ -456,7 +456,7 @@ spec:
             Match                 structured.*
             Rename                log message
             Hard_rename           log _log
-            Condition             Key_exists  _processed_log
+            Condition             Key_exists  _flb_processed_log
 
         [FILTER]
             Name                  rewrite_tag
@@ -471,7 +471,7 @@ spec:
             Match                 structured.*
             Rename                msg message
             Hard_rename           msg _msg
-            Condition             Key_exists  _processed_msg
+            Condition             Key_exists  _flb_processed_msg
         
         [FILTER]
             Name                  rewrite_tag
@@ -486,7 +486,7 @@ spec:
             Match                 structured.*
             Rename                message  log
             Rename                _log  log
-            Condition             Key_does_not_exist  _processed_logfmt
+            Condition             Key_does_not_exist  _flb_processed_logfmt
         
         [FILTER]
             Name                  modify
@@ -494,7 +494,7 @@ spec:
             Match                 structured.*
             Rename                log message
             Hard_rename           log _log
-            Condition             Key_exists  _processed_logfmt
+            Condition             Key_exists  _flb_processed_logfmt
 
         [FILTER]
             Name                  rewrite_tag
@@ -532,10 +532,10 @@ spec:
         
         [FILTER]
             Name                  lua
-            Alias                 final.structured.lua.set_processing_status
+            Alias                 final.structured.lua.set_flb_processing_status
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
-            call                  set_processing_status
+            call                  set_flb_processing_status
             enable_flb_null       On
 
         [FILTER]
@@ -580,7 +580,7 @@ spec:
             Match                 final.structured
             script                /fluent-bit/scripts/sanitize_records.lua
             call                  normalize
-            type_array_key        _rejected_fields
+            type_array_key        _flb_rejected_fields
             enable_flb_null       On
         
         [FILTER]
@@ -615,10 +615,9 @@ spec:
         
         [FILTER]
             Name                  modify
-            Alias                 remove.flb_processed
+            Alias                 final.remove.flb.fields
             Match                 final.*
-            Remove                _last_processed
-            Remove                _log_remaining_last
+            Remove_wildcard       __flb_
         
         #[FILTER]
         #    Name    grep
@@ -818,69 +817,69 @@ spec:
         
         function multiline_processed(tag, timestamp, record)
           if record["_raw_log"] and record["log"] and record["_raw_log"] ~= record["log"] then
-            record["_last_processed"] = "multiline"
-            record["_processed_multiline"] = true
-            record["_processing_status"] = "bypass"
+            record["__flb_last_processed"] = "multiline"
+            record["_flb_processed_multiline"] = true
+            record["_flb_processing_status"] = "bypass"
           end
         
           return 2, timestamp, record
         end
         
-        function set_processing_status(tag, timestamp, record)
-          -- Set _processing_status field to current state of parsing
-          if record["_processing_status"] ~= "bypass" 
-                and record["_log_remaining"]
+        function set_flb_processing_status(tag, timestamp, record)
+          -- Set _flb_processing_status field to current state of parsing
+          if record["_flb_processing_status"] ~= "bypass" 
+                and record["_flb_log_remaining"]
                 and record["_raw_log"] ~= nil then
-            if record["_log_remaining"] == record["_raw_log"] then
+            if record["_flb_log_remaining"] == record["_raw_log"] then
               processing_status = "unparsed"
-              record["_log_remaining"] = nil
+              record["_flb_log_remaining"] = nil
             else
-              if record["_processed"][#record["_processed"]] == "msg" then
+              if record["_flb_processed"][#record["_flb_processed"]] == "msg" then
                 processing_status = "parsed"
-                record["_log_remaining"] = nil
+                record["_flb_log_remaining"] = nil
               else
                 processing_status = "partial"
               end
             end
           else
             processing_status = "parsed"
-            record["_log_remaining"] = nil
+            record["_flb_log_remaining"] = nil
           end
         
-          last_parsed = record["_parsed"][#record["_parsed"]]
+          last_parsed = record["_flb_parsed"][#record["_flb_parsed"]]
           if last_parsed and last_parsed ~= "ingest" and last_parsed ~= "bypass" then
             processing_suffix = ":" .. last_parsed
           else
             processing_suffix = ""
           end 
         
-          record["_processing_status"] = processing_status .. processing_suffix
+          record["_flb_processing_status"] = processing_status .. processing_suffix
         
           return 2, timestamp, record
         end
         
         function flb_tags(tag, timestamp, record)
           --Ensure needed fields are ready
-          if type(record["_processed"]) ~= "table" then record["_processed"] = {} end
-          if type(record["_parsed"]) ~= "table" then record["_parsed"] = {} end
+          if type(record["_flb_processed"]) ~= "table" then record["_flb_processed"] = {} end
+          if type(record["_flb_parsed"]) ~= "table" then record["_flb_parsed"] = {} end
           if type(record["_flb_tags"]) ~= "table" then record["_flb_tags"] = {} end
         
-          if record["_last_processed"] then
+          if record["__flb_last_processed"] then
             -- Extend _parsed but only if processing had an effect
-            if record["_log_remaining"] == nil or 
-                (record["_log_remaining"] ~= record["_raw_log"] and record["_log_remaining_last"] ~= record["_log_remaining"]) then
-              table.insert(record["_parsed"], record["_last_processed"])
+            if record["_flb_log_remaining"] == nil or 
+                (record["_flb_log_remaining"] ~= record["_raw_log"] and record["__flb_log_remaining_last"] ~= record["_flb_log_remaining"]) then
+              table.insert(record["_flb_parsed"], record["__flb_last_processed"])
             end
-            table.insert(record["_processed"], record["_last_processed"])
+            table.insert(record["_flb_processed"], record["__flb_last_processed"])
           end
         
           -- Extend _flb_tags field with tag
           local tag = string.lower(tag)
           if has_value(record["_flb_tags"], tag) == false then
             -- Set _parsed and _processed if processing bypassed
-            if record["_processing_status"] == "bypass" then
-              table.insert(record["_parsed"], record["_processing_status"])
-              table.insert(record["_processed"], record["_processing_status"])
+            if record["_flb_processing_status"] == "bypass" then
+              table.insert(record["_flb_parsed"], record["_flb_processing_status"])
+              table.insert(record["_flb_processed"], record["_flb_processing_status"])
             end
         
             table.insert(record["_flb_tags"], tag)
@@ -958,12 +957,12 @@ spec:
               value = nil
             end
         
-            --Ensure field name has valid name.  If any field is invalid add to _rejected_fields field for troubleshooting
+            --Ensure field name has valid name.  If any field is invalid add to _flb_rejected_fields for troubleshooting
             if field:match("^[a-zA-Z_][a-zA-Z0-9_%-\\/]*$") then
               _record[field] = value
             else
-              if type(_record["_rejected_fields"]) ~= "table" then _record["_rejected_fields"] = {} end
-              table.insert(_record["_rejected_fields"], field)
+              if type(_record["_flb_rejected_fields"]) ~= "table" then _record["_flb_rejected_fields"] = {} end
+              table.insert(_record["_flb_rejected_fields"], field)
             end
         
             --print("field:", field, "Value:", _record[field], "Value:", type(_record[field]))
