@@ -125,13 +125,7 @@ spec:
             Mem_Buf_Limit         50MB
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
-      filters: |
-        [FILTER]
-            Name                  modify
-            Alias                 in.set._flb_processed
-            Match                 in.*
-            Set                   _flb_processed yes
-        
+      filters: |        
         [FILTER]
             Name                  throttle
             Alias                 throttle.fluent-bit
@@ -191,25 +185,31 @@ spec:
         # Rewrite Tag for in.* for better tag naming
 
         [FILTER]
+            Name                  record_modifier
+            Alias                 in.set._flb_id
+            Match                 in.*
+            Uuid_key              _flb_id
+        
+        [FILTER]
             Name                  rewrite_tag
             Alias                 in.kube.containers
             Emitter_Name          in.kube.containers
             Match                 in.kube.containers.cluster.*
-            Rule                  $_flb_processed ^. in.kube.containers.$kubernetes_namespace_name.$kubernetes_container_name.$kubernetes_pod_name false
+            Rule                  $_flb_id ^. in.kube.containers.$kubernetes_namespace_name.$kubernetes_container_name.$kubernetes_pod_name false
         
         [FILTER]
             Name                  rewrite_tag
             Alias                 in.host.systemd
             Emitter_Name          in.host.systemd
             Match                 in.host.systemd.unit.*
-            Rule                  $_flb_processed ^. in.host.systemd.$syslog_identifier.$hostname false
+            Rule                  $_flb_id ^. in.host.systemd.$syslog_identifier.$hostname false
         
         [FILTER]
             Name                  rewrite_tag
             Alias                 in.kube.events
             Emitter_Name          in.kube.events
             Match                 in.kube.events.cluster
-            Rule                  $_flb_processed ^. in.kube.events.$type.$reason.$action false
+            Rule                  $_flb_id ^. in.kube.events.$type.$reason.$action false
         
         [FILTER]
             Name                  modify
@@ -233,19 +233,13 @@ spec:
             Match                 structured.*
             Rename                msg       log
         
-        [FILTER]
-            Name                  record_modifier
-            Alias                 in.set._flb_id
-            Match                 in.*
-            Uuid_key              _flb_id
-        
         # Raw Logs
         [FILTER]
             Name                  rewrite_tag
             Alias                 raw.ingest
             Emitter_Name          raw.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. raw.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] true
+            Rule                  $_flb_id ^. raw.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] true
         
         # Structured Logs
         [FILTER]
@@ -253,7 +247,7 @@ spec:
             Alias                 structured.ingest
             Emitter_Name          structured.ingest
             Match                 in.*
-            Rule                  $_flb_processed ^. structured.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] false
+            Rule                  $_flb_id ^. structured.ingest.$TAG[1].$TAG[2].$TAG[3].$TAG[4].$TAG[5] false
         
         [FILTER]
             Name                  modify
@@ -517,7 +511,7 @@ spec:
             Emitter_Name          final-structured
             Emitter_Storage.type  filesystem
             Match                 structured.*
-            Rule                  $_flb_processed ^. final.structured false
+            Rule                  $_flb_id ^. final.structured false
         
         [FILTER]
             Name                  rewrite_tag
@@ -525,7 +519,7 @@ spec:
             Emitter_Name          final-raw
             Emitter_Storage.type  filesystem
             Match                 raw.*
-            Rule                  $_flb_processed ^. final.raw false
+            Rule                  $_flb_id ^. final.raw false
 
         [FILTER]
             Name                  modify
@@ -623,7 +617,6 @@ spec:
             Name                  modify
             Alias                 remove.flb_processed
             Match                 final.*
-            Remove                _flb_processed
             Remove                _last_processed
             Remove                _log_remaining_last
         
