@@ -56,6 +56,10 @@ spec:
       install: false
 
     gitlab:
+      gitaly:
+        securityContext:
+          fsGroupChangePolicy: "OnRootMismatch"
+
       webservice:
         ingress:
           tls:
@@ -99,9 +103,15 @@ spec:
       ingress:
         tls:
           secretName: minio-tls
+      securityContext:
+        fsGroupChangePolicy: "OnRootMismatch"
 
     prometheus:
       install: false
+
+    redis:
+      securityContext:
+        fsGroupChangePolicy: "OnRootMismatch"
 
     gitlab-runner:
       install: true
