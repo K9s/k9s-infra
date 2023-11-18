@@ -878,8 +878,8 @@ spec:
           if has_value(record["_flb_tags"], tag) == false then
             -- Set _parsed and _processed if processing bypassed
             if record["_flb_processing_status"] == "bypass" then
-              table.insert(record["_flb_parsed"], record["_flb_processing_status"])
-              table.insert(record["_flb_processed"], record["_flb_processing_status"])
+              if #record["_flb_parsed"] == 0 then table.insert(record["_flb_parsed"], "bypass") end
+              if #record["_flb_processed"] == 0 then table.insert(record["_flb_processed"], "bypass") end
             end
         
             table.insert(record["_flb_tags"], tag)
