@@ -1,0 +1,10 @@
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: rbd
+driver: rbd.csi.ceph.com
+parameters:
+  clusterID: c83cff86-6529-46c7-974f-efb4c175a36b
+  csi.storage.k8s.io/snapshotter-secret-name: csi-rbd-secret
+  csi.storage.k8s.io/snapshotter-secret-namespace: rbd-csi
+deletionPolicy: Delete
