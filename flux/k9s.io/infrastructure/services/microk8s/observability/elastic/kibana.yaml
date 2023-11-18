@@ -3,7 +3,7 @@ kind: Kibana
 metadata:
   name: logs
 spec:
-  version: 7.17.9
+  version: 7.17.15
   count: 1
   elasticsearchRef:
     name: logs

@@ -3,7 +3,7 @@ kind: Elasticsearch
 metadata:
   name: logs
 spec:
-  version: 7.17.9
+  version: 7.17.15
   nodeSets:
     - name: data
       count: 3
