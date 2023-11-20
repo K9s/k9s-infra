@@ -177,7 +177,7 @@ spec:
             Name                  lua
             Alias                 lua.kubernetes_namespace_container_name
             Match                 in.kube.containers.cluster.*
-            script                /fluent-bit/scripts/sanitize_records.lua
+            script                /fluent-bit/scripts/flb.lua
             call                  kubernetes_namespace_container_name
             enable_flb_null       On
         
@@ -229,7 +229,7 @@ spec:
             Name                  lua
             Alias                 flb_tags
             Match                 *
-            script                /fluent-bit/scripts/sanitize_records.lua
+            script                /fluent-bit/scripts/flb.lua
             call                  flb_tags
             type_array_key        _flb_tags _flb_processed _flb_parsed
             enable_flb_null       On
@@ -295,7 +295,7 @@ spec:
             Name                  lua
             Alias                 structured.ingest.multiline.processed
             Match                 structured.ingest.*
-            script                /fluent-bit/scripts/sanitize_records.lua
+            script                /fluent-bit/scripts/flb.lua
             call                  multiline_processed
         
         [FILTER]
@@ -403,7 +403,7 @@ spec:
             Name                  lua
             Alias                 structured.lua.normalize
             Match                 structured.*
-            script                /fluent-bit/scripts/sanitize_records.lua
+            script                /fluent-bit/scripts/flb.lua
             call                  normalize
             type_array_key        _flb_rejected_fields
             enable_flb_null       On
@@ -539,7 +539,7 @@ spec:
             Name                  lua
             Alias                 final.structured.lua.set_flb_processing_status
             Match                 final.structured
-            script                /fluent-bit/scripts/sanitize_records.lua
+            script                /fluent-bit/scripts/flb.lua
             call                  set_flb_processing_status
             enable_flb_null       On
 
@@ -575,7 +575,7 @@ spec:
             Name                  lua
             Alias                 structured.lua.normalize.final
             Match                 final.structured
-            script                /fluent-bit/scripts/sanitize_records.lua
+            script                /fluent-bit/scripts/flb.lua
             call                  normalize
             type_array_key        _flb_rejected_fields
             enable_flb_null       On
@@ -606,7 +606,7 @@ spec:
             Name                  lua
             Alias                 structured.lua.statuscode_level
             Match                 final.structured
-            script                /fluent-bit/scripts/sanitize_records.lua
+            script                /fluent-bit/scripts/flb.lua
             call                  statuscode_level
             enable_flb_null       On
         
@@ -796,7 +796,7 @@ spec:
             Decode_Field_As     escaped     msg
 
     luaScripts:
-      sanitize_records.lua: |
+      flb.lua: |
         function all_trim(s)
           local from = s:match"^%s*()"
           return from > #s and "" or s:match(".*%S", from)
