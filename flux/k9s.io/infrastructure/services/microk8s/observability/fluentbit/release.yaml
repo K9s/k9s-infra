@@ -124,7 +124,7 @@ spec:
             Mem_Buf_Limit         50MB
 
       ## https://docs.fluentbit.io/manual/pipeline/filters
-      filters: |        
+      filters: |
         [FILTER]
             Name                  throttle
             Alias                 throttle.fluent-bit
@@ -534,8 +534,6 @@ spec:
             Match                 final.structured
             Rename                log     message
             Rename                msg     message
-            Rename                _log    message
-            Rename                _msg    message
         
         [FILTER]
             Name                  lua
@@ -551,14 +549,6 @@ spec:
             Match                 final.structured
             Operation             lift
             Nested_under          source
-        
-        [FILTER]
-            Name                  nest
-            Alias                 structured.lift.params
-            Match                 final.structured
-            Operation             lift
-            Nested_under          params
-            Add_prefix            params/
 
         [FILTER]
             Name                  nest
