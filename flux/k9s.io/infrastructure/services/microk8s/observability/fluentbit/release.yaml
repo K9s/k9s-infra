@@ -175,6 +175,14 @@ spec:
             Add_prefix            kubernetes_annotations/
         
         [FILTER]
+            Name                  lua
+            Alias                 lua.kubernetes_namespace_container_name
+            Match                 in.kube.containers.cluster.*
+            script                /fluent-bit/scripts/sanitize_records.lua
+            call                  kubernetes_namespace_container_name
+            enable_flb_null       On
+        
+        [FILTER]
             Name                  nest
             Alias                 lift.kube.events.metadata
             Match                 in.kube.events.cluster
@@ -904,6 +912,16 @@ spec:
                 record["level"] = "DEBUG"
               end
             end
+          end
+        
+          return 2, timestamp, record
+        end
+        
+        function kubernetes_namespace_container_name(tag, timestamp, record)
+          if record["kubernetes_namespace_name"] and record["kubernetes_container_name"] then
+            record["kubernetes_namespace_container_name"] = record["kubernetes_namespace_name"] .. "/" .. record["kubernetes_container_name"]
+          else
+            record["kubernetes_enrichment_missing"] = true
           end
         
           return 2, timestamp, record
