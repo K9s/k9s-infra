@@ -77,7 +77,6 @@ spec:
             Buffer_Max_Size       10M
             Skip_Long_Lines       On
             Skip_Empty_Lines      On
-            Read_from_Head        On
             Refresh_Interval      2
         
         [INPUT]
