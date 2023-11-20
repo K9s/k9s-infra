@@ -879,7 +879,11 @@ spec:
               if #record["_flb_processed"] == 0 then table.insert(record["_flb_processed"], "bypass") end
             end
         
-            table.insert(record["_flb_tags"], tag)
+            if record["_flb_initial_tag"] == nil then
+              record["_flb_initial_tag"] = tag
+            else
+              table.insert(record["_flb_tags"], tag)
+            end
           end
         
           return 2, timestamp, record
