@@ -188,6 +188,14 @@ spec:
             Operation             lift
             Nested_under          metadata
             Add_prefix            metadata/
+        
+        [FILTER]
+            Name                  nest
+            Alias                 lift.kube.events.involvedobject
+            Match                 in.kube.events.cluster
+            Operation             lift
+            Nested_under          involvedObject
+            Add_prefix            involvedobject/
 
         # Rewrite Tag for in.* for better tag naming
 
