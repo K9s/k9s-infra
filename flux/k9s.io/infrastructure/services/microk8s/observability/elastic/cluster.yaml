@@ -18,7 +18,6 @@ spec:
                 storage: 500Gi
             storageClassName: longhorn
       config:
-        node.store.allow_mmap: false
         xpack.security.authc:
           anonymous:
             username: anonymous_user
