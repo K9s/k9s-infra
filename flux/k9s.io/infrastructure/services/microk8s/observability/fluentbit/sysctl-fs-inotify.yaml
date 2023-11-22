@@ -43,6 +43,7 @@ spec:
             - |
               sysctl -w fs.inotify.max_user_watches=$(USER_WATCHES_MAX)
               sysctl -w fs.inotify.max_user_instances=$(USER_INSTANCES_MAX)
+              sysctl -w vm.max_map_count=262144
           resources:
             requests:
               cpu: 10m
