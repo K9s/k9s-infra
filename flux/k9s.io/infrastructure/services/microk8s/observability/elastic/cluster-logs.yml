@@ -1,0 +1,106 @@
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: cluster-logs
+spec:
+  version: 8.11.1
+  nodeSets:
+  - name: hot
+    count: 1
+    config:
+      node.roles: ["data_hot", "ingest", "master"]
+      xpack.security.authc:
+        anonymous:
+          username: anonymous_user
+          roles: kibana_admin, viewer, superuser
+          authz_exception: true
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: rbd
+
+  # warm nodes, with high storage
+  - name: warm
+    count: 1
+    config:
+      node.roles: ["data_warm"]
+      xpack.security.authc:
+        anonymous:
+          username: anonymous_user
+          roles: kibana_admin, viewer, superuser
+          authz_exception: true
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Gi
+        storageClassName: rbd-slow
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: cluster-logs
+spec:
+  version: 8.11.1
+  count: 1
+  elasticsearchRef:
+    name: cluster-logs
+  config:
+    xpack.security.enabled: false
+    server.publicBaseUrl: "https://logs.${environment}.${domain}"
+    elasticsearch.requestTimeout: 3600000
+    server.keepaliveTimeout: 3600000
+    server.socketTimeout: 3600000
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  podTemplate:
+    spec:
+      containers:
+        - name: kibana
+          readinessProbe:
+            httpGet:
+              path: "/status"
+              port: 5601
+              scheme: HTTP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: es-cluster-logs-ingress
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout:  "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+#    nginx.ingress.kubernetes.io/auth-url: "https://auth.${environment}.${domain}/oauth2/auth"
+#    nginx.ingress.kubernetes.io/auth-signin: "https://auth.${environment}.${domain}/oauth2/start?rd=$escaped_request_uri"
+spec:
+  ingressClassName: nginx-internal
+  tls:
+    - hosts:
+        - logs.${environment}.${domain}
+      secretName: es-cluster-logs-tls
+  rules:
+    - host: logs.${environment}.${domain}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cluster-logs-kb-http
+                port:
+                  number: 5601

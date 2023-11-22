@@ -5,3 +5,4 @@ resources:
   - apm.yaml
   - cluster.yaml
   - kibana.yaml
+#  - cluster-logs.yml
