@@ -168,10 +168,12 @@ spec:
               name = "docker-certs"
               mount_path = "/certs/client"
               medium = "Memory"
+              size_limit = "1G"
             [[runners.kubernetes.volumes.empty_dir]]
               name = "repo"
               mount_path = "/builds"
               medium = "Memory"
+              size_limit = "1G"
             {{- if .Values.global.minio.enabled }}
             [runners.cache]
               Type = "s3"
