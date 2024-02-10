@@ -25,7 +25,7 @@ resource "null_resource" "create_template_vm" {
       "qm set ${var.vm_id + count.index} --delete unused0",
       "qm importdisk ${var.vm_id + count.index} ${local.cloudimg}.img ${var.storage_target}",
       "qm set ${var.vm_id + count.index} --scsihw virtio-scsi-pci --scsi0 ${var.storage_target}:vm-${var.vm_id + count.index}-disk-0",
-      "qm set ${var.vm_id + count.index} --ide2 local-lvm:cloudinit",
+      "qm set ${var.vm_id + count.index} --ide2 nvme:cloudinit",
       "qm set ${var.vm_id + count.index} --boot c --bootdisk scsi0",
       "qm set ${var.vm_id + count.index} --serial0 socket --vga serial0",
       "qm set ${var.vm_id + count.index} --machine q35",

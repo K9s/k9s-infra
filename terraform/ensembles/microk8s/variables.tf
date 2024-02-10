@@ -25,7 +25,7 @@ variable "vendor_storage_target" {
 variable "storage_target" {
   type = string
 
-  default = "local-lvm"
+  default = "nvme"
 }
 
 variable "target_nodes" {

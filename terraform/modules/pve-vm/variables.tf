@@ -25,7 +25,7 @@ variable "target_node" {
 variable "storage_target" {
   type = string
 
-  default = "local-lvm"
+  default = "nvme"
 }
 
 variable "storage_size" {

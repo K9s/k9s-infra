@@ -37,6 +37,6 @@ remote_state {
 }
 
 inputs = merge(
-local.global_vars.locals,
-local.pve_vars.locals
+  local.global_vars.locals,
+  local.pve_vars.locals
 )

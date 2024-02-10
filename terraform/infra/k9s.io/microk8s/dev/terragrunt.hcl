@@ -21,9 +21,9 @@ inputs = {
   clone                 = dependency.cloudimg.outputs.name
   vendor_storage_target = dependency.cloudinit.outputs.storage_target
 
-  num_instances = 4
+  num_instances = 3
 
-  storage_target = "ssd"
+  storage_target = "nvme"
   storage_size   = "200G"
 
   memory  = 32768
@@ -33,7 +33,7 @@ inputs = {
 
   use_pet_name = false
 
-  network_bridge = "vmbr1"
+  network_bridge = "vmbr0"
 
-  tags = [ "mk8s" ]
+  tags = [ "mk8s-dev" ]
 }
