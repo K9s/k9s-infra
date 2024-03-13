@@ -1,0 +1,50 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: braindb
+spec:
+  releaseName: braindb
+  chart:
+    spec:
+      chart: couchdb
+      sourceRef:
+        kind: HelmRepository
+        name: couchdb
+        namespace: brain
+      version: "4.5.0"
+  interval: 1h0m0s
+  values:
+    prometheusPort:
+      enabled: true
+    allowAdminParty: false
+    createAdminSecret: false
+    persistentVolume:
+      enabled: true
+    couchdbConfig:
+      chttpd:
+        enable_cors: true
+        require_valid_user: true
+        max_http_request_size: 4294967296
+      chttpd_auth:
+        require_valid_user: true
+      httpd:
+        enable_cors: true
+        WWW-Authenticate: 'Basic realm=\"couchdb\"'
+      couchdb:
+        uuid: 7ed3aefdfa884b50976459c107c2fe23
+        max_document_size: 4294967296
+      cors:
+        credentials: true
+        origins: "app://obsidian.md,capacitor://localhost,http://localhost"
+    ingress:
+      enabled: true
+      hosts:
+       - braindb.${environment}.${domain}
+      tls:
+        - hosts:
+            - braindb.${environment}.${domain}
+          secretName: couchdb-braindb-tls
+      className: nginx-external-noauth
+      annotations:
+        kubernetes.io/tls-acme: "true"
+        nginx.ingress.kubernetes.io/proxy-body-size: "100m"
