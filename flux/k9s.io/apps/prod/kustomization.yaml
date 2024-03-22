@@ -4,4 +4,4 @@ resources:
   - ../base/minecraft
   - mc-router
   - randycraft.yaml
-  - braindb
+#  - braindb
