@@ -118,7 +118,7 @@ spec:
       rbac:
         clusterWideAccess: true
         create: true
-      replicas: 5
+      replicas: 1
       concurrent: 200
       checkInterval: 5
       logFormat: json
@@ -129,7 +129,6 @@ spec:
       service:
         enabled: true
       runners:
-        locked: false
         config: |
           [[runners]]
             pre_get_sources_script = '''
