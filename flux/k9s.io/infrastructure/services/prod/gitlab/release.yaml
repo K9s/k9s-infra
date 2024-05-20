@@ -119,7 +119,7 @@ spec:
         clusterWideAccess: true
         create: true
       replicas: 1
-      concurrent: 200
+      concurrent: 20
       checkInterval: 5
       logFormat: json
       metrics:
