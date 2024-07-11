@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: jetstack
         namespace: cert-manager
-      version: "1.12.1"
+      version: "1.12.11"
   values:
     installCRDs: true
     ingressShim:
