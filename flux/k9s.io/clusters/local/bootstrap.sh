@@ -58,6 +58,17 @@ else
   curl -s https://fluxcd.io/install.sh | sudo bash
 fi
 
+KUBESEAL_VERSION="0.27.0"
+if kubeseal --version | grep $KUBESEAL_VERSION; then
+  echo "kubeseal command present at $(which kubeseal)"
+else
+  curl -OL "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz"
+  tar -xvzf kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz kubeseal
+  sudo install -m 755 kubeseal /usr/local/bin/kubeseal
+  rm kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz || true
+  rm kubeseal || true
+fi
+
 ## Minio
 docker run --name minio -d --restart=always --net=kind --mount type=bind,source=$(realpath ../../../../../),target=/data -p 9000:9000 -p 9001:9001 --user $(id -u):$(id -g) quay.io/minio/minio:RELEASE.2022-05-26T05-48-41Z server /data --console-address ":9001" || true
 
