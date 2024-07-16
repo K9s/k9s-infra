@@ -23,3 +23,15 @@ spec:
             username: anonymous_user
             roles: kibana_admin, viewer, superuser
             authz_exception: true
+      podTemplate:
+       spec:
+         containers:
+         - name: elasticsearch
+           env:
+           - name: ES_JAVA_OPTS
+             value: -Xms3g -Xmx3g
+           resources:
+             requests:
+               memory: 4Gi
+             limits:
+               memory: 4Gi
