@@ -9,3 +9,5 @@ spec:
       name: nginx-internal
       controllerClass: "k8s.io/ingress-nginx-internal"
     electionID: internal-ingress-controller-leader
+    tcp:
+      "22": "gitlab/gitlab-gitlab-shell:22"
