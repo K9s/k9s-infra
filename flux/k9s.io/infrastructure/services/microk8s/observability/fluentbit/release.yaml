@@ -967,7 +967,7 @@ spec:
               --Add field if loglevel is not one of the expected values create field for troubleshooting
               if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE', 'CRITICAL', 'NOTICE'}, value) then
                 _record["_invalid_level"] = value
-                _record["level"] = "INVALID"
+                value = "INVALID"
               end
             end
         
