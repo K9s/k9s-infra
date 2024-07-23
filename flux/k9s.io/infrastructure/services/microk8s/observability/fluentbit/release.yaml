@@ -750,6 +750,11 @@ spec:
             Time_Format %Y-%m-%d %H:%M:%S.%L
         
         [PARSER]
+            Name        thread-exception
+            Format      regex
+            Regex       ^#<Thread:(?<thread>\S*)\s(?<file>.*):(?<line>\d*)\s(?<command>.*)>(?<msg>.+)$
+        
+        [PARSER]
             Name        simple-level-msg
             Format      regex
             Regex       ^#(?<level>.*):(?<msg>.*)$
