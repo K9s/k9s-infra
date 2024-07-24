@@ -48,6 +48,10 @@ spec:
           enabled: true
         dependencyProxy:
           enabled: true
+        cron_jobs:
+          # Periodically clean up stale ci_runner_machines records
+          ci_runners_stale_machines_cleanup_worker:
+           cron: "36 * * * *"
 
     nginx-ingress:
       ingressClassByName: true
