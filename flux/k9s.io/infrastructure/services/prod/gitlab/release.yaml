@@ -133,7 +133,7 @@ spec:
       service:
         enabled: true
       sessionServer:
-        enabled: true
+        enabled: false
       runners:
         config: |
           [[runners]]
