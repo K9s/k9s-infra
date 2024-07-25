@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: flux-system
-      version: "11.3.12"
+      version: "11.3.18"
   interval: 1h0m0s
   install:
     remediation:
