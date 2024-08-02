@@ -707,7 +707,7 @@ spec:
             Time_Key    time
             Time_Format %d/%b/%Y:%H:%M:%S %z
         
-        # TODO Fix this, it 'works' but is bad
+        # TODO Fix this, it "works" but is bad
         [PARSER]
             Name        apache_error
             Format      regex
@@ -810,6 +810,20 @@ spec:
 
     luaScripts:
       flb.lua: |
+        local _levels = {}
+        
+        _levels["DEBUG"]    = 10
+        _levels["INFO"]     = 20
+        _levels["WARN"]     = 30
+        _levels["ERROR"]    = 40
+        _levels["CRITICAL"] = 50
+        _levels["FATAL"]    = 80
+        _levels["UNKNOWN"]  = 90
+        _levels["INVALID"]  = _levels["UNKNOWN"] + 5
+        _levels["TRACE"]    = _levels["DEBUG"] + 2
+        _levels["NOTICE"]   = _levels["INFO"] + 2
+        _levels["ENGINE"]   = _levels["WARN"] + 2
+        
         function all_trim(s)
           local from = s:match"^%s*()"
           return from > #s and "" or s:match(".*%S", from)
@@ -919,7 +933,14 @@ spec:
               end
             end
           end
-        
+          
+          if record["level"] == nil then
+            record["level"] = "UNKNOWN"
+          end
+          
+          --Set _level field based on level mapping from _levels{}
+          record["_level"] = _levels[record["level"]]
+
           return 2, timestamp, record
         end
         
@@ -935,6 +956,7 @@ spec:
         
         function normalize(tag, timestamp, record)
           local _record = {}
+        
           for field, value in pairs(record) do
             --Normalize field value and ensure basic types are preserved
             if type(value) == "string" then
@@ -965,7 +987,7 @@ spec:
               if value == "#" then value = "NOTICE" end
         
               --Add field if loglevel is not one of the expected values create field for troubleshooting
-              if not has_value({'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'UNKNOWN', 'ENGINE', 'CRITICAL', 'NOTICE'}, value) then
+              if not has_value({"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "UNKNOWN", "ENGINE", "CRITICAL", "NOTICE"}, value) then
                 _record["_invalid_level"] = value
                 value = "INVALID"
               end
