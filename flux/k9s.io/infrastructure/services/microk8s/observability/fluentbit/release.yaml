@@ -8,7 +8,7 @@ spec:
   interval: 10m
   chart:
     spec:
-      version: 0.40.0
+      version: 0.45.0
       chart: fluent-bit
       sourceRef:
         kind: HelmRepository
