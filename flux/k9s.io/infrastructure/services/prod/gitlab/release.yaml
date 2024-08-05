@@ -143,7 +143,7 @@ spec:
             [runners.kubernetes]
               privileged = true
               request_concurrency = 1
-              image = "ubuntu:22.04"
+              image = "gitlab.dev.services.k9s.io:443/ci/dependency_proxy/containers/ubuntu:22.04"
               helper_image_flavor = "ubuntu"
               namespace = "ci-builds"
               namespace_overwrite_allowed = "ci-.*"
