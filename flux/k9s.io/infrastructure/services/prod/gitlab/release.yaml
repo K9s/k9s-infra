@@ -21,9 +21,7 @@ spec:
     global:
       edition: ce
       hosts:
-        domain: gitlab.${environment}.${domain}
-        gitlab:
-          name: gitlab.${environment}.${domain}
+        domain: dev.${environment}.${domain}
       ingress:
         configureCertmanager: false
         class: gitlab-nginx
