@@ -850,13 +850,12 @@ spec:
         end
         
         function set_flb_processing_status(tag, timestamp, record)
-          -- Set _flb_processing_status field to current state of parsing
+          --Set _flb_processing_status field to current state of parsing
           if record["_flb_processing_status"] ~= "bypass" 
                 and record["_flb_log_remaining"]
                 and record["_raw_log"] ~= nil then
             if record["_flb_log_remaining"] == record["_raw_log"] then
               processing_status = "unparsed"
-              record["_flb_log_remaining"] = nil
             else
               if record["_flb_processed"][#record["_flb_processed"]] == "msg" then
                 processing_status = "parsed"
@@ -889,7 +888,7 @@ spec:
           if type(record["_flb_tags"]) ~= "table" then record["_flb_tags"] = {} end
         
           if record["__flb_last_processed"] then
-            -- Extend _parsed but only if processing had an effect
+            --Extend _parsed but only if processing had an effect
             if record["_flb_log_remaining"] == nil or 
                 (record["_flb_log_remaining"] ~= record["_raw_log"] and record["__flb_log_remaining_last"] ~= record["_flb_log_remaining"]) then
               table.insert(record["_flb_parsed"], record["__flb_last_processed"])
@@ -897,10 +896,10 @@ spec:
             table.insert(record["_flb_processed"], record["__flb_last_processed"])
           end
         
-          -- Extend _flb_tags field with tag
+          --Extend _flb_tags field with tag
           local tag = string.lower(tag)
           if has_value(record["_flb_tags"], tag) == false then
-            -- Set _parsed and _processed if processing bypassed
+            --Set _parsed and _processed if processing bypassed
             if record["_flb_processing_status"] == "bypass" then
               if #record["_flb_parsed"] == 0 then table.insert(record["_flb_parsed"], "bypass") end
               if #record["_flb_processed"] == 0 then table.insert(record["_flb_processed"], "bypass") end
@@ -934,8 +933,13 @@ spec:
             end
           end
           
+          --Ensure label has value.  If log is fully parsed (empty _flb_log_remaining field) then NOTICE else UNKNOWN
           if record["level"] == nil then
-            record["level"] = "UNKNOWN"
+            if record["_flb_log_remaining"] == nil then
+              record["level"] = "NOTICE"
+            else
+              record["level"] = "UNKNOWN"
+            end
           end
           
           --Set _level field based on level mapping from _levels{}
@@ -977,7 +981,7 @@ spec:
             if field == "level" then
               value = string.upper(value)
         
-              -- Redis log levels https://gist.github.com/jgould22/f42ad756fc07143e2a104d7844f39b12
+              --Redis log levels https://gist.github.com/jgould22/f42ad756fc07143e2a104d7844f39b12
               if value == "F" then value = "FATAL" end
               if value == "E" or value == "ERR" or value == "EROR" then value = "ERROR" end
               if value == "W" or value == "*" or value == "WARNING" then value = "WARN" end
