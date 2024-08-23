@@ -969,6 +969,11 @@ spec:
         function normalize(tag, timestamp, record)
           local _record = {}
         
+          --If type record appears to be from a k8s Event set level to type
+          if has_value({"Warning", "Error", "Normal"}, record["type"]) then
+            record["level"] = record["type"]
+          end
+        
           for field, value in pairs(record) do
             --Normalize field value and ensure basic types are preserved
             if type(value) == "string" then
@@ -996,7 +1001,7 @@ spec:
               if value == "I" or value == "-" then value = "INFO" end
               if value == "D" or value == "." then value = "DEBUG" end
               if value == "T" then value = "TRACE" end
-              if value == "#" then value = "NOTICE" end
+              if value == "#" or value == "NORMAL" then value = "NOTICE" end
         
               --Add field if loglevel is not one of the expected values create field for troubleshooting
               if not has_value({"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "UNKNOWN", "ENGINE", "CRITICAL", "NOTICE"}, value) then
