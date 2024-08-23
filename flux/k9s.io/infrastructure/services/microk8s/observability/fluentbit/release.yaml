@@ -611,6 +611,14 @@ spec:
             Hard_copy             metadata/uid      _flb_id
         
         [FILTER]
+            Name                  modify
+            Alias                 structured.set.host
+            Match                 final.structured
+            Copy                  kubernetes_host   host
+            Copy                  hostname          host
+            Copy                  kind              host
+        
+        [FILTER]
             Name                  lua
             Alias                 structured.lua.statuscode_level
             Match                 final.structured
