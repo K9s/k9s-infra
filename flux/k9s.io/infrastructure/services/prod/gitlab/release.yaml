@@ -141,41 +141,41 @@ spec:
 
             [runners.kubernetes]
               privileged = true
-              request_concurrency = 1
               image = "gitlab.dev.services.k9s.io:443/ci/dependency_proxy/containers/ubuntu:22.04"
               helper_image_flavor = "ubuntu"
               namespace = "ci-builds"
               namespace_overwrite_allowed = "ci-.*"
 
+              poll_interval = 5
+              poll_timeout = 3600
+
               # build container
               cpu_request = "250m"
-              cpu_limit = "8"
+              cpu_limit = "4"
               memory_request = "1Gi"
               memory_limit = "6Gi"
 
               # service containers
               service_cpu_request = "250m"
-              service_cpu_limit = "8"
+              service_cpu_limit = "4"
               service_memory_request = "1Gi"
               service_memory_limit = "6Gi"
 
               # helper container
               helper_cpu_request = "100m"
-              helper_cpu_limit = "250m"
+              helper_cpu_limit = "2"
               helper_memory_request = "500Mi"
               helper_memory_limit = "1Gi"
+          
             [runners.kubernetes.pod_annotations]
               "fluentbit.io/exclude" = "true"
+          
             [[runners.kubernetes.volumes.empty_dir]]
               name = "docker-certs"
               mount_path = "/certs/client"
               medium = "Memory"
               size_limit = "1G"
-            [[runners.kubernetes.volumes.empty_dir]]
-              name = "repo"
-              mount_path = "/builds"
-              medium = "Memory"
-              size_limit = "1G"
+          
             {{- if .Values.global.minio.enabled }}
             [runners.cache]
               Type = "s3"
