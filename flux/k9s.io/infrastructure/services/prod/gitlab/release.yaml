@@ -150,13 +150,13 @@ spec:
               poll_timeout = 3600
 
               # build container
-              cpu_request = "250m"
+              cpu_request = "1"
               cpu_limit = "4"
               memory_request = "1Gi"
               memory_limit = "6Gi"
 
               # service containers
-              service_cpu_request = "250m"
+              service_cpu_request = "1"
               service_cpu_limit = "4"
               service_memory_request = "1Gi"
               service_memory_limit = "6Gi"
