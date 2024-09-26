@@ -40,6 +40,10 @@ spec:
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
         ruleSelectorNilUsesHelmValues: false
+        containers:
+        - name: prometheus
+          startupProbe:
+            failureThreshold: 600
         storageSpec:
           volumeClaimTemplate:
             spec:
