@@ -7,4 +7,5 @@ resources:
   - release.yaml
   - snapshot-class-rbd.yaml
   - storage-class-rbd.yaml
-  - storage-class-rbd-slow.yaml
+  - storage-class-rbd-bulk.yaml
+  - storage-class-rbd-ssd.yaml

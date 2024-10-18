@@ -1,7 +1,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: rbd
+  name: rbd-ssd
 provisioner: rbd.csi.ceph.com
 parameters:
   clusterID: 2d70006f-5a98-452a-a07d-8cea4228248f
@@ -13,7 +13,7 @@ parameters:
   csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret
   csi.storage.k8s.io/provisioner-secret-namespace: rbd-csi
   imageFeatures: layering
-  pool: ${internal_environment:-"${environment}"}-mk8s-rbd
+  pool: ${internal_environment:-"${environment}"}-mk8s-rbd-ssd
   thickProvision: "false"
 reclaimPolicy: Delete
 allowVolumeExpansion: true

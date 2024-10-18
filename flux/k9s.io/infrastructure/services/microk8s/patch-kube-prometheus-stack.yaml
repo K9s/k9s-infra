@@ -9,7 +9,7 @@ spec:
         storageSpec:
           volumeClaimTemplate:
             spec:
-              storageClassName: rbd-slow
+              storageClassName: rbd-bulk
               resources:
                 requests:
                   storage: 500Gi

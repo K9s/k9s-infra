@@ -11,16 +11,22 @@ terraform {
   required_providers {
     proxmox = {
       source = "telmate/proxmox"
-      version = "2.9.11"
+      version = "3.0.1-rc1"
     }
   }
 }
 
 provider "proxmox" {
-  pm_tls_insecure = true
   pm_api_url      = "https://${local.pve_vars.locals.target_nodes[0]}.${local.pve_vars.locals.domain_name}:8006/api2/json"
   pm_parallel     = 20
   pm_timeout      = 600
+#  pm_log_enable   = true
+#  pm_log_file     = "terraform-plugin-proxmox.log"
+#  pm_debug        = true
+#  pm_log_levels   = {
+#    _default      = "debug"
+#    _capturelog   = ""
+#  }
 }
 EOF
 }

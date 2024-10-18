@@ -1,0 +1,12 @@
+#cloud-config
+packages:
+  - qemu-guest-agent
+
+runcmd:
+  - timedatectl set-timezone UTC
+  - systemctl start qemu-guest-agent
+  - echo '#!/bin/bash' > /etc/cron.hourly/fstrim && echo fstrim -av >> /etc/cron.hourly/fstrim
+  - chmod +x /etc/cron.hourly/fstrim
+  - echo "Installing Docker"
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sudo sh get-docker.sh

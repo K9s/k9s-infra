@@ -19,11 +19,11 @@ spec:
     secret:
       create: true
       userID: admin
-      userKey: "AQC2ZihgJbzABBAA3RDoADmmVW49CYNB+QNhwg=="
+      userKey: "AQAmeP9mUfQaMhAAkJws2wl2TzC8UcyB4W08Gg=="
     storageClass:
       create: false
     csiConfig:
-      - clusterID: "c83cff86-6529-46c7-974f-efb4c175a36b"
+      - clusterID: "2d70006f-5a98-452a-a07d-8cea4228248f"
         monitors:
         - "192.168.86.242:6789"
         - "192.168.86.243:6789"
