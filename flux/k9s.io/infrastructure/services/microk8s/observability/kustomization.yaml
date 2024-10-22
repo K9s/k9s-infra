@@ -4,4 +4,4 @@ namespace: observability
 resources:
   - namespace.yaml
   - elastic/
-  - fluentbit/
+#  - fluentbit/
