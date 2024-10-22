@@ -646,7 +646,7 @@ spec:
             Host                      logs-es-http
             Match                     final.structured
             Index                     logs-k8s-structured
-            Write_Operation           upsert
+            Write_Operation           create
             Id_Key                    _flb_id
             Suppress_Type_Name        On
             Replace_Dots              On
@@ -665,7 +665,7 @@ spec:
             Host                      logs-es-http
             Match                     final.raw
             Index                     logs-k8s-raw
-            Write_Operation           upsert
+            Write_Operation           create
             Id_Key                    _flb_id
             Suppress_Type_Name        On
             Replace_Dots              On
