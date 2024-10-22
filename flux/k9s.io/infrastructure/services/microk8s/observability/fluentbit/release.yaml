@@ -645,7 +645,7 @@ spec:
             Alias                     out.es.structured
             Host                      logs-es-http
             Match                     final.structured
-            Index                     logs-structured
+            Index                     logs-k8s-structured
             Write_Operation           upsert
             Id_Key                    _flb_id
             Suppress_Type_Name        On
@@ -664,7 +664,7 @@ spec:
             Alias                     out.es.raw
             Host                      logs-es-http
             Match                     final.raw
-            Index                     logs-raw
+            Index                     logs-k8s-raw
             Write_Operation           upsert
             Id_Key                    _flb_id
             Suppress_Type_Name        On
