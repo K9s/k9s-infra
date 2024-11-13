@@ -8,7 +8,7 @@ echo "Setting IOSCHED"
 
 modprobe bfq
 
-sst set -ssd 1 PowerGovernorMode=2 || true
+sst set -ssd 1 PowerGovernorMode=0 || true
 
 hdd_scheduler='mq-deadline'
 if grep -q bfq /sys/block/sd*/queue/scheduler; then
@@ -64,7 +64,7 @@ for DISK in /sys/block/bcache*; do
 
   echo 120 > "${DISK}"/bcache/writeback_delay
 
-  echo $(($(numfmt --from=iec 8M) / 512)) > "${DISK}"/bcache/writeback_rate_minimum
+  echo $(($(numfmt --from=iec 16M) / 512)) > "${DISK}"/bcache/writeback_rate_minimum
 #  echo 0 > "${DISK}"/bcache/writeback_rate_minimum
 
   echo 0 > "${DISK}"/bcache/cache/internal/gc_after_writeback
