@@ -1,0 +1,13 @@
+[Unit]
+Description=Ceph Host Config
+After=pve-storage.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /mnt/pve/cephfs/share/workspace/scripts/ceph-host-config.sh
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

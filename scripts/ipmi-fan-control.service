@@ -1,0 +1,13 @@
+[Unit]
+Description=IPMI Fan Control
+After=pve-storage.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /mnt/pve/cephfs/share/workspace/scripts/ipmi-fan-control.sh
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
