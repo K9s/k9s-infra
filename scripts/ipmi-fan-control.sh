@@ -77,7 +77,7 @@ do
   DEVICE_TEMP=$(bash -c "$DEVICE_TEMP_CMD")
   AMBIENT_TEMP=$(bash -c "$AMBIENT_TEMP_CMD")
 
-  if ! [ -z DEVICE_TEMP_MIN_OVERRIDE ]; then
+  if [[ -n $DEVICE_TEMP_MIN_OVERRIDE ]]; then
     DEVICE_TEMP_MIN=$AMBIENT_TEMP
   fi
 
@@ -87,34 +87,34 @@ do
     exit -1
   fi
 
-  ## Clamp scalers to ensure curve remains between MIN/MAX
+  ## Clamp RATIOs to ensure curve remains between MIN/MAX
   # Device
   if [ "$DEVICE_TEMP" -ge $DEVICE_TEMP_MAX ]; then
-    FAN_SCALER_DEVICE=1
+    FAN_RATIO_DEVICE=1
   elif [ "$DEVICE_TEMP" -lt $DEVICE_TEMP_MIN ]; then
-    FAN_SCALER_DEVICE=0
+    FAN_RATIO_DEVICE=0
   else
-    FAN_SCALER_DEVICE=$(echo "scale=4;($DEVICE_TEMP - $DEVICE_TEMP_MIN) / ($DEVICE_TEMP_MAX - $DEVICE_TEMP_MIN)" | bc)
+    FAN_RATIO_DEVICE=$(echo "scale=4;($DEVICE_TEMP - $DEVICE_TEMP_MIN) / ($DEVICE_TEMP_MAX - $DEVICE_TEMP_MIN)" | bc)
   fi
   # Ambient
   if [ "$AMBIENT_TEMP" -ge $AMBIENT_TEMP_MAX ]; then
-    FAN_SCALER_AMBIENT=1
+    FAN_RATIO_AMBIENT=1
   elif [ "$AMBIENT_TEMP" -lt $AMBIENT_TEMP_MIN ]; then
-    FAN_SCALER_AMBIENT=0
+    FAN_RATIO_AMBIENT=0
   else
-    FAN_SCALER_AMBIENT=$(echo "scale=4;($AMBIENT_TEMP - $AMBIENT_TEMP_MIN) / ($AMBIENT_TEMP_MAX - $AMBIENT_TEMP_MIN)" | bc)
+    FAN_RATIO_AMBIENT=$(echo "scale=4;($AMBIENT_TEMP - $AMBIENT_TEMP_MIN) / ($AMBIENT_TEMP_MAX - $AMBIENT_TEMP_MIN)" | bc)
   fi
 
-  # Unless ambient or device temps are at MAX add bias and then average scalers
-  if [[ "$FAN_SCALER_DEVICE" == "1" ]] || [[ "$FAN_SCALER_AMBIENT" == "1" ]]; then
+  # Unless ambient or device temps are at MAX add bias and then average RATIOs
+  if [[ "$FAN_RATIO_DEVICE" == "1" ]] || [[ "$FAN_RATIO_AMBIENT" == "1" ]]; then
     echo "Device ${DEVICE_TEMP}c(${DEVICE_TEMP_MAX}c) and/or ambient ${AMBIENT_TEMP}c(${AMBIENT_TEMP_MAX}c) temp is above MAX allowed threashold(s)!"
-    FAN_SCALER=1
+    FAN_RATIO=1
   else
-    FAN_SCALER=$(echo "scale=4;(($FAN_SCALER_DEVICE * $DEVICE_TEMP_BIAS) + $FAN_SCALER_AMBIENT) / ($DEVICE_TEMP_BIAS + 1)" | bc)
+    FAN_RATIO=$(echo "scale=4;(($FAN_RATIO_DEVICE * $DEVICE_TEMP_BIAS) + $FAN_RATIO_AMBIENT) / ($DEVICE_TEMP_BIAS + 1)" | bc)
   fi
 
   FAN_PERCENT_LAST=${FAN_PERCENT:-255}
-  FAN_PERCENT=$(echo "scale=2;(($FAN_PERCENT_MAX - $FAN_PERCENT_MIN) * $FAN_SCALER + $FAN_PERCENT_MIN)" | bc | cut -d '.' -f 1)
+  FAN_PERCENT=$(echo "scale=2;(($FAN_PERCENT_MAX - $FAN_PERCENT_MIN) * $FAN_RATIO + $FAN_PERCENT_MIN)" | bc | cut -d '.' -f 1)
 
   # Continue if $FAN_PERCENT is unchanged from last iteration
   if [ $FAN_PERCENT_LAST -eq $FAN_PERCENT ]; then
@@ -129,7 +129,7 @@ do
   sleep $CHECK_INTERVAL
 
   # Log
-  log="Device ${DEVICE_TEMP}c Ambient Temp(+device): ${AMBIENT_TEMP}c(+$((DEVICE_TEMP - AMBIENT_TEMP))c) Scaler(Device/Ambient): ${FAN_SCALER}(${FAN_SCALER_DEVICE}/${FAN_SCALER_AMBIENT}) Fan%(hex):${FAN_PERCENT}(${FAN_PERCENT_HEX})"
+  log="Device ${DEVICE_TEMP}c Ambient Temp(+device): ${AMBIENT_TEMP}c(+$((DEVICE_TEMP - AMBIENT_TEMP))c) RATIO(Device/Ambient): ${FAN_RATIO}(${FAN_RATIO_DEVICE}/${FAN_RATIO_AMBIENT}) Fan%(hex):${FAN_PERCENT}(${FAN_PERCENT_HEX})"
   FAN_RPM=$(${IPMI_BASE_CMD} sensor reading "FAN 1 RPM" | tr -s "  " " " | cut -d " " -f 5)
   echo "${log} RPM: ${FAN_RPM} Checks Since Last Change: ${check_count}"
   check_count=0
