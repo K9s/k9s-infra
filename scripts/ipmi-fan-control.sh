@@ -84,22 +84,22 @@ do
   if [ -z "${DEVICE_TEMP}" ] || [ -z "${AMBIENT_TEMP}" ]; then
     # If the condition that caused this to trigger is not resolved fans will spin up and down repeatedly as the service starts and then ends in error
     echo "Unable to determine DEVICE_TEMP (${DEVICE_TEMP}) or AMBIENT_TEMP (${AMBIENT_TEMP}). Exiting!"
-    exit -1
+    exit 1
   fi
 
   ## Clamp RATIOs to ensure curve remains between MIN/MAX
   # Device
-  if [ "$DEVICE_TEMP" -ge $DEVICE_TEMP_MAX ]; then
+  if [ "$DEVICE_TEMP" -ge "$DEVICE_TEMP_MAX" ]; then
     FAN_RATIO_DEVICE=1
-  elif [ "$DEVICE_TEMP" -lt $DEVICE_TEMP_MIN ]; then
+  elif [ "$DEVICE_TEMP" -lt "$DEVICE_TEMP_MIN" ]; then
     FAN_RATIO_DEVICE=0
   else
     FAN_RATIO_DEVICE=$(echo "scale=4;($DEVICE_TEMP - $DEVICE_TEMP_MIN) / ($DEVICE_TEMP_MAX - $DEVICE_TEMP_MIN)" | bc)
   fi
   # Ambient
-  if [ "$AMBIENT_TEMP" -ge $AMBIENT_TEMP_MAX ]; then
+  if [ "$AMBIENT_TEMP" -ge "$AMBIENT_TEMP_MAX" ]; then
     FAN_RATIO_AMBIENT=1
-  elif [ "$AMBIENT_TEMP" -lt $AMBIENT_TEMP_MIN ]; then
+  elif [ "$AMBIENT_TEMP" -lt "$AMBIENT_TEMP_MIN" ]; then
     FAN_RATIO_AMBIENT=0
   else
     FAN_RATIO_AMBIENT=$(echo "scale=4;($AMBIENT_TEMP - $AMBIENT_TEMP_MIN) / ($AMBIENT_TEMP_MAX - $AMBIENT_TEMP_MIN)" | bc)
@@ -107,7 +107,7 @@ do
 
   # Unless ambient or device temps are at MAX add bias and then average RATIOs
   if [[ "$FAN_RATIO_DEVICE" == "1" ]] || [[ "$FAN_RATIO_AMBIENT" == "1" ]]; then
-    echo "Device ${DEVICE_TEMP}c(${DEVICE_TEMP_MAX}c) and/or ambient ${AMBIENT_TEMP}c(${AMBIENT_TEMP_MAX}c) temp is above MAX allowed threashold(s)!"
+    echo "Device ${DEVICE_TEMP}c(${DEVICE_TEMP_MAX}c) and/or ambient ${AMBIENT_TEMP}c(${AMBIENT_TEMP_MAX}c) temp is above MAX allowed threshold(s)!"
     FAN_RATIO=1
   else
     FAN_RATIO=$(echo "scale=4;(($FAN_RATIO_DEVICE * $DEVICE_TEMP_BIAS) + $FAN_RATIO_AMBIENT) / ($DEVICE_TEMP_BIAS + 1)" | bc)
@@ -117,19 +117,23 @@ do
   FAN_PERCENT=$(echo "scale=2;(($FAN_PERCENT_MAX - $FAN_PERCENT_MIN) * $FAN_RATIO + $FAN_PERCENT_MIN)" | bc | cut -d '.' -f 1)
 
   # Continue if $FAN_PERCENT is unchanged from last iteration
-  if [ $FAN_PERCENT_LAST -eq $FAN_PERCENT ]; then
+  if [ "$FAN_PERCENT_LAST" -eq "$FAN_PERCENT" ]; then
     sleep $CHECK_INTERVAL
     continue
   fi
 
   # Set fan speed
-  FAN_PERCENT_HEX="0x$(printf '%x\n' $FAN_PERCENT)"
+  FAN_PERCENT_HEX="0x$(printf '%x\n' "$FAN_PERCENT")"
   $IPMI_BASE_CMD raw 0x30 0x30 0x02 0xff "${FAN_PERCENT_HEX}" >/dev/null
 
   sleep $CHECK_INTERVAL
 
   # Log
-  log="Device ${DEVICE_TEMP}c Ambient Temp(+device): ${AMBIENT_TEMP}c(+$((DEVICE_TEMP - AMBIENT_TEMP))c) RATIO(Device/Ambient): ${FAN_RATIO}(${FAN_RATIO_DEVICE}/${FAN_RATIO_AMBIENT}) Fan%(hex):${FAN_PERCENT}(${FAN_PERCENT_HEX})"
+  log="\
+Device: ${DEVICE_TEMP}c | \
+Ambient Temp(+device): ${AMBIENT_TEMP}c(+$((DEVICE_TEMP - AMBIENT_TEMP))c) | \
+Fan Ratio(Device/Ambient): ${FAN_RATIO}(${FAN_RATIO_DEVICE}/${FAN_RATIO_AMBIENT}) | \
+Final Fan%(hex): ${FAN_PERCENT}(${FAN_PERCENT_HEX})"
   FAN_RPM=$(${IPMI_BASE_CMD} sensor reading "FAN 1 RPM" | tr -s "  " " " | cut -d " " -f 5)
   echo "${log} RPM: ${FAN_RPM} Checks Since Last Change: ${check_count}"
   check_count=0
