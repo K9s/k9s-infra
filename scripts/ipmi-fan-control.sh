@@ -21,18 +21,20 @@ IPMI_BASE_CMD="ipmitool -y ${IPMI_EK}"
 
 ## Temp
 # Ambient
-AMBIENT_TEMP_CMD=${AMBIENT_TEMP_CMD:-"${IPMI_BASE_CMD} sensor reading 'Ambient Temp' | tr -s '  ' ' ' | cut -d ' ' -f 4"}
-AMBIENT_TEMP_MIN=${AMBIENT_TEMP_MIN:-25}
-AMBIENT_TEMP_MAX=${AMBIENT_TEMP_MAX:-40}
+AMBIENT_TEMP_CMD=${AMBIENT_TEMP_CMD:-"${IPMI_BASE_CMD} sensor reading 'Ambient Temp' | tr -s ' ' | cut -d ' ' -f 4"}
+AMBIENT_TEMP_MIN=${AMBIENT_TEMP_MIN:-23}
+AMBIENT_TEMP_MAX=${AMBIENT_TEMP_MAX:-43}
 # Device
-DEVICE_TEMP_CMD=${DEVICE_TEMP_CMD:-"smartctl --all /dev/nvme0n1 | grep 'Temperature:' | tr -s '  ' ' ' | cut -d ' ' -f 2"}
+DEVICE_TEMP_CMD=${DEVICE_TEMP_CMD:-"smartctl --all /dev/nvme0n1 | grep 'Temperature:' | tr -s ' ' | cut -d ' ' -f 2"}
+#DEVICE_TEMP_CMD="mget_temp -d $(lspci | grep MT27700 | tail -n 1 | cut -d " " -f 1 | tr -s ' ')"
 DEVICE_TEMP_BIAS=${DEVICE_TEMP_BIAS:-4}
 DEVICE_TEMP_MIN=${DEVICE_TEMP_MIN:-35}
-DEVICE_TEMP_MIN_OVERRIDE='AMBIENT'
-DEVICE_TEMP_MAX=${DEVICE_TEMP_MAX:-70}
+DEVICE_TEMP_MIN_OVERRIDE='AMBIENT_TEMP'
+DEVICE_TEMP_MAX=${DEVICE_TEMP_MAX:-$(smartctl --all /dev/nvme0n1 | grep 'Critical Comp. Temp. Threshold:' | tr -s ' ' | rev | cut -d ' ' -f2 | rev)}
 ## Fan
-FAN_PERCENT_MIN=${FAN_PERCENT_MIN:-10}
-FAN_PERCENT_MAX=${FAN_PERCENT_MAX:-80}
+FAN_PERCENT_MIN=${FAN_PERCENT_MIN:-5}
+FAN_PERCENT_MAX=${FAN_PERCENT_MAX:-70}
+
 
 ## Misc
 CHECK_INTERVAL=10
@@ -40,7 +42,7 @@ CHECK_INTERVAL=10
 #### Trap
 fallback() {
   echo 'Stopping Active Control, fallback to automatic fan control'
-  $IPMI_BASE_CMD raw 0x30 0x30 0x02 0xff "0x$(printf '%x\n' 100)" >/dev/null # 100% Fan
+  $IPMI_BASE_CMD raw 0x30 0x30 0x02 0xff "0x$(printf '%x\n' "$FAN_PERCENT_MAX")" >/dev/null
   sleep 5
   ## Enable automatic fan control
   $IPMI_BASE_CMD raw 0x30 0x30 0x01 0x01 >/dev/null
@@ -61,8 +63,8 @@ echo "--- IPMI_HOST: ${IPMI_HOST} IPMI_USER: ${IPMI_USER}"
 # Disable automatic fan control
 $IPMI_BASE_CMD raw 0x30 0x30 0x01 0x00 >/dev/null
 
-# Spin up to 100%
-$IPMI_BASE_CMD raw 0x30 0x30 0x02 0xff "0x$(printf '%x\n' 100)" >/dev/null
+# Spin up to FAN_PERCENT_MAX
+$IPMI_BASE_CMD raw 0x30 0x30 0x02 0xff "0x$(printf '%x\n' "$FAN_PERCENT_MAX")" >/dev/null
 sleep 2
 
 # Main loop
@@ -74,11 +76,11 @@ do
   fi
   check_count=$((check_count+1))
 
-  DEVICE_TEMP=$(bash -c "$DEVICE_TEMP_CMD")
-  AMBIENT_TEMP=$(bash -c "$AMBIENT_TEMP_CMD")
+  DEVICE_TEMP=$(bash -c "${DEVICE_TEMP_CMD} | cut -d ' ' -f 1")
+  AMBIENT_TEMP=$(bash -c "${AMBIENT_TEMP_CMD} | cut -d ' ' -f 1")
 
   if [[ -n $DEVICE_TEMP_MIN_OVERRIDE ]]; then
-    DEVICE_TEMP_MIN=$AMBIENT_TEMP
+    DEVICE_TEMP_MIN=${!DEVICE_TEMP_MIN_OVERRIDE}
   fi
 
   if [ -z "${DEVICE_TEMP}" ] || [ -z "${AMBIENT_TEMP}" ]; then
@@ -110,17 +112,11 @@ do
     echo "Device ${DEVICE_TEMP}c(${DEVICE_TEMP_MAX}c) and/or ambient ${AMBIENT_TEMP}c(${AMBIENT_TEMP_MAX}c) temp is above MAX allowed threshold(s)!"
     FAN_RATIO=1
   else
-    FAN_RATIO=$(echo "scale=4;(($FAN_RATIO_DEVICE * $DEVICE_TEMP_BIAS) + $FAN_RATIO_AMBIENT) / ($DEVICE_TEMP_BIAS + 1)" | bc)
+    FAN_RATIO=$(echo "scale=4; (($FAN_RATIO_DEVICE * $DEVICE_TEMP_BIAS) + $FAN_RATIO_AMBIENT) / ($DEVICE_TEMP_BIAS + (1 * $FAN_RATIO_AMBIENT))" | bc)
   fi
 
-  FAN_PERCENT_LAST=${FAN_PERCENT:-255}
+  FAN_PERCENT_LAST=${FAN_PERCENT:-100}
   FAN_PERCENT=$(echo "scale=2;(($FAN_PERCENT_MAX - $FAN_PERCENT_MIN) * $FAN_RATIO + $FAN_PERCENT_MIN)" | bc | cut -d '.' -f 1)
-
-  # Continue if $FAN_PERCENT is unchanged from last iteration
-  if [ "$FAN_PERCENT_LAST" -eq "$FAN_PERCENT" ]; then
-    sleep $CHECK_INTERVAL
-    continue
-  fi
 
   # Set fan speed
   FAN_PERCENT_HEX="0x$(printf '%x\n' "$FAN_PERCENT")"
@@ -128,15 +124,17 @@ do
 
   sleep $CHECK_INTERVAL
 
-  # Log
-  log="\
+  # Only log if $FAN_PERCENT is changed
+  if [ "$FAN_PERCENT_LAST" -ne "$FAN_PERCENT" ]; then
+    log="\
 Device: ${DEVICE_TEMP}c | \
 Ambient Temp(+device): ${AMBIENT_TEMP}c(+$((DEVICE_TEMP - AMBIENT_TEMP))c) | \
 Fan Ratio(Device/Ambient): ${FAN_RATIO}(${FAN_RATIO_DEVICE}/${FAN_RATIO_AMBIENT}) | \
 Final Fan%(hex): ${FAN_PERCENT}(${FAN_PERCENT_HEX})"
-  FAN_RPM=$(${IPMI_BASE_CMD} sensor reading "FAN 1 RPM" | tr -s "  " " " | cut -d " " -f 5)
-  echo "${log} RPM: ${FAN_RPM} Checks Since Last Change: ${check_count}"
-  check_count=0
+    FAN_RPM=$(${IPMI_BASE_CMD} sensor reading "FAN 1 RPM" | tr -s "  " " " | cut -d " " -f 5)
+    echo "${log} RPM: ${FAN_RPM} Checks Since Last Change: ${check_count}"
+    check_count=0
+  fi
 done
 
 echo '--- Graceful exit all is well!'
