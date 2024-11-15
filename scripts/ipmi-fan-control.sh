@@ -38,6 +38,7 @@ FAN_PERCENT_MAX=${FAN_PERCENT_MAX:-65}
 
 ## Misc
 CHECK_INTERVAL=10
+PERIODIC_LOG_INTERVAL=$((60 * CHECK_INTERVAL)) # Log at least once and hour(ish)
 
 #### Trap
 fallback() {
@@ -127,15 +128,22 @@ do
   sleep $CHECK_INTERVAL
 
   # Only log if $FAN_PERCENT is changed
-  if [ "$FAN_PERCENT_LAST" -ne "$FAN_PERCENT" ]; then
-    log="\
-Device: ${DEVICE_TEMP}c | \
-Ambient Temp(+device): ${AMBIENT_TEMP}c(+$((DEVICE_TEMP - AMBIENT_TEMP))c) | \
-Fan Ratio(Device/Ambient): ${FAN_RATIO}(${FAN_RATIO_DEVICE}/${FAN_RATIO_AMBIENT}) | \
-Final Fan%(hex): ${FAN_PERCENT}(${FAN_PERCENT_HEX})"
+  if [ "$FAN_PERCENT_LAST" -ne "$FAN_PERCENT" ] || [ "$((check_count % PERIODIC_LOG_INTERVAL))" -eq "0" ]; then
     FAN_RPM=$(${IPMI_BASE_CMD} sensor reading "FAN 1 RPM" | tr -s "  " " " | cut -d " " -f 5)
-    echo "${log} RPM: ${FAN_RPM} Checks Since Last Change: ${check_count}"
-    check_count=0
+    log="\
+Device Temp: ${DEVICE_TEMP}c | \
+Ambient Temp(+device): ${AMBIENT_TEMP}c(+$((DEVICE_TEMP - AMBIENT_TEMP))c) | \
+Ratio(Device/Ambient): ${FAN_RATIO}(${FAN_RATIO_DEVICE}/${FAN_RATIO_AMBIENT}) | \
+Fan%(hex): ${FAN_PERCENT}(${FAN_PERCENT_HEX}) | \
+RPM: ${FAN_RPM} | \
+Checks Since Last Change: ${check_count}"
+    if [ "$((check_count % PERIODIC_LOG_INTERVAL))" -eq "0" ]; then
+      log="INFO: ${log} "
+    else
+      check_count=0
+      log="UPDATED: ${log}"
+    fi
+    echo "$log"
   fi
 done
 
