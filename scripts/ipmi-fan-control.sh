@@ -108,18 +108,16 @@ do
     FAN_RATIO_AMBIENT=$(echo "scale=4;($AMBIENT_TEMP - $AMBIENT_TEMP_MIN) / ($AMBIENT_TEMP_MAX - $AMBIENT_TEMP_MIN)" | bc)
   fi
 
-  # AMBIENT ratio is NOT accounted for in the denominator here ie it is not a 'true' average.  This means FAN_RATIO
-  # can go above 1 if both AMBIENT and DEVICE temps are at or near MAX.  This allows fans to 'boost' if temps start
-  # to get crazy.
-  FAN_RATIO=$(echo "scale=4; (($FAN_RATIO_DEVICE * $DEVICE_TEMP_BIAS) + $FAN_RATIO_AMBIENT) / $DEVICE_TEMP_BIAS" | bc)
+  # Unless ambient or device temps are at MAX add bias and then average RATIOs
+  if [[ "$FAN_RATIO_DEVICE" == "1" ]] || [[ "$FAN_RATIO_AMBIENT" == "1" ]]; then
+    echo "Device ${DEVICE_TEMP}c(${DEVICE_TEMP_MAX}c) and/or ambient ${AMBIENT_TEMP}c(${AMBIENT_TEMP_MAX}c) temp is above MAX allowed threshold(s)!"
+    FAN_RATIO=1
+  else
+    FAN_RATIO=$(echo "scale=4; (($FAN_RATIO_DEVICE * $DEVICE_TEMP_BIAS) + $FAN_RATIO_AMBIENT) / ($DEVICE_TEMP_BIAS + 1)" | bc)
+  fi
 
   FAN_PERCENT_LAST=${FAN_PERCENT:-100}
   FAN_PERCENT=$(echo "scale=2;(($FAN_PERCENT_MAX - $FAN_PERCENT_MIN) * $FAN_RATIO + $FAN_PERCENT_MIN)" | bc | cut -d '.' -f 1)
-
-  # If $FAN_PERCENT > 100% clamp.  This can occur when DEVICE and AMBIENT temps are at/near threshold.
-  if [ "$FAN_PERCENT" -gt "100" ]; then
-    FAN_PERCENT=100
-  fi
 
   # Set fan speed
   FAN_PERCENT_HEX="0x$(printf '%x\n' "$FAN_PERCENT")"
