@@ -77,7 +77,7 @@ for DISK in /sys/block/bcache*; do
 
   echo $((60 * 2)) > "${DISK}"/bcache/writeback_delay
 
-  echo $(($(numfmt --from=iec 8M) / 512)) > "${DISK}"/bcache/writeback_rate_minimum
+  echo $(($(numfmt --from=iec 32M) / 512)) > "${DISK}"/bcache/writeback_rate_minimum
 #  echo 0 > "${DISK}"/bcache/writeback_rate_minimum
 
   echo 0 > "${DISK}"/bcache/cache/internal/gc_after_writeback
