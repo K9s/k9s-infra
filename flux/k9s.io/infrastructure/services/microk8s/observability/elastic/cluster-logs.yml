@@ -45,7 +45,7 @@ spec:
         resources:
           requests:
             storage: 500Gi
-        storageClassName: rbd-bulk
+        storageClassName: rbd
 ---
 apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
