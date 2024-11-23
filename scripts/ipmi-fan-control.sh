@@ -73,6 +73,11 @@ sleep 2
 # Main loop
 while true
 do
+  # Set Fans for MD1200... hack because it works
+  stty -F /dev/ttyS0 38400 raw -echoe -echok -echoctl -echoke
+  echo -e -n 'set_speed 20\r' > /dev/ttyS0
+  echo -e -n 'shelf_led 1\r' > /dev/ttyS0
+
   if [[ $0 -nt $scriptupdate ]]; then
     echo '--- New version detected, terminating main loop!'
     break
