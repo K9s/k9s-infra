@@ -40,7 +40,6 @@ for DISK in /sys/block/sd*; do
   echo 64 > "${DISK}"/queue/nr_requests
   cat "${DISK}"/queue/logical_block_size > "${DISK}"/queue/max_sectors_kb || true
   cat "${DISK}"/queue/max_sectors_kb > "${DISK}"/queue/read_ahead_kb || true
-  cat "${DISK}"/queue/read_ahead_kb || true
   echo 1 > "${DISK}"/queue/rq_affinity
   echo 0 > "${DISK}"/queue/io_poll_delay
   echo 1 > "${DISK}"/queue/nomerges
@@ -51,7 +50,6 @@ for DISK in /sys/block/nvme*; do
   echo 8 > "${DISK}"/queue/nr_requests
   echo 128 > "${DISK}"/queue/max_sectors_kb
   cat "${DISK}"/queue/logical_block_size > "${DISK}"/queue/read_ahead_kb
-  cat "${DISK}"/queue/read_ahead_kb
   echo 1 > "${DISK}"/queue/rq_affinity
   echo 0 > "${DISK}"/queue/io_poll_delay
   echo 1 > "${DISK}"/queue/nomerges
@@ -77,8 +75,15 @@ for DISK in /sys/block/bcache*; do
 
   echo $((60 * 2)) > "${DISK}"/bcache/writeback_delay
 
-  echo $(($(numfmt --from=iec 32M) / 512)) > "${DISK}"/bcache/writeback_rate_minimum
-#  echo 0 > "${DISK}"/bcache/writeback_rate_minimum
+  # Hack to support hw raid on pve1 that has more perf available than the $backing devices would indicate
+  if grep -q sdb "${DISK}/bcache/backing_dev_name"; then
+    backing_drive_count=16
+  else
+    backing_drive_count=$(lsblk | grep $(cat "${DISK}/bcache/backing_dev_name") | wc -l)
+  fi
+
+  echo $(($(numfmt --from=iec $(( 8 * backing_drive_count ))M) / 512)) > "${DISK}/bcache/writeback_rate_minimum"
+#  echo 0 > "${DISK}/bcache/writeback_rate_minimum"
 
   echo 0 > "${DISK}"/bcache/cache/internal/gc_after_writeback
 
