@@ -37,19 +37,20 @@ echo "Configuring Queue Settings"
 # https://gist.github.com/v-fox/b7adbc2414da46e2c49e571929057429
 
 for DISK in /sys/block/sd*; do
-  echo 64 > "${DISK}"/queue/nr_requests
-  cat "${DISK}"/queue/logical_block_size > "${DISK}"/queue/max_sectors_kb || true
-  cat "${DISK}"/queue/max_sectors_kb > "${DISK}"/queue/read_ahead_kb || true
+  echo 1 > "${DISK}"/queue/add_random
+  echo 2048 > "${DISK}"/queue/nr_requests
+  cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/max_sectors_kb || true
+  cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/read_ahead_kb || true
   echo 1 > "${DISK}"/queue/rq_affinity
   echo 0 > "${DISK}"/queue/io_poll_delay
-  echo 1 > "${DISK}"/queue/nomerges
+  echo 0 > "${DISK}"/queue/nomerges
 done
 
 for DISK in /sys/block/nvme*; do
-  echo 1 > "${DISK}"/queue/add_random
+  echo 0 > "${DISK}"/queue/add_random
   echo 8 > "${DISK}"/queue/nr_requests
-  echo 128 > "${DISK}"/queue/max_sectors_kb
-  cat "${DISK}"/queue/logical_block_size > "${DISK}"/queue/read_ahead_kb
+  cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/max_sectors_kb || true
+  cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/read_ahead_kb || true
   echo 1 > "${DISK}"/queue/rq_affinity
   echo 0 > "${DISK}"/queue/io_poll_delay
   echo 1 > "${DISK}"/queue/nomerges
@@ -58,9 +59,11 @@ for DISK in /sys/block/nvme*; do
   echo 333111111 > "${DISK}"/queue/iosched/write_lat_nsec
 done
 
+echo "-----------------------------------------------------------"
 for DISK in /sys/block/bcache*; do
+  echo "Processing ${DISK}...."
   # shellcheck disable=SC2086
-  echo 2048 > ${DISK}/queue/read_ahead_kb
+  echo 0 > ${DISK}/queue/read_ahead_kb
 
 #  echo writearound > "${DISK}"/bcache/cache_mode
   echo writeback > "${DISK}"/bcache/cache_mode
@@ -75,12 +78,13 @@ for DISK in /sys/block/bcache*; do
 
   echo $((60 * 2)) > "${DISK}"/bcache/writeback_delay
 
-  # Hack to support hw raid on pve1 that has more perf available than the $backing devices would indicate
-  if grep -q sdb "${DISK}/bcache/backing_dev_name"; then
+  # Hack to support hw raid on pve1 that has more perf available than the # of backing devices would indicate
+  if (hostname | grep -q pve1) && grep -q sdb "${DISK}/bcache/backing_dev_name"; then
     backing_drive_count=16
   else
     backing_drive_count=$(lsblk | grep $(cat "${DISK}/bcache/backing_dev_name") | wc -l)
   fi
+  echo "... backing device count ${backing_drive_count}"
 
   echo $(($(numfmt --from=iec $(( 8 * backing_drive_count ))M) / 512)) > "${DISK}/bcache/writeback_rate_minimum"
 #  echo 0 > "${DISK}/bcache/writeback_rate_minimum"
@@ -96,4 +100,6 @@ for DISK in /sys/block/bcache*; do
   echo 0 > "${DISK}"/bcache/cache/congested_write_threshold_us
 #  echo 2000 > "${DISK}"/bcache/cache/congested_read_threshold_us
 #  echo 20000 > "${DISK}"/bcache/cache/congested_write_threshold_us
+  echo "-------------------------------"
 done
+echo "-----------------------------------------------------------"
