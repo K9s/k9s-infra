@@ -4,8 +4,6 @@ set -o pipefail
 
 cpupower idle-set -D 11
 
-#sst set -ssd 1 PowerGovernorMode=2 || true
-
 echo "Setting IOSCHED"
 
 modprobe bfq || true
@@ -31,39 +29,42 @@ for DISK in /sys/block/sd*; do grep -q 0 "${DISK}"/queue/rotational && echo ${ss
 for DISK in /sys/block/sd*; do grep -q 1 "${DISK}"/queue/rotational && echo ${hdd_scheduler} > "${DISK}"/queue/scheduler; done
 
 for DISK in /sys/block/sd*; do grep -q 0 "${DISK}"/queue/rotational && (hdparm -W 0 -A 1 /dev/"$(echo "$DISK" | cut -d / -f 4)" || true); done
-for DISK in /sys/block/sd*; do grep -q 1 "${DISK}"/queue/rotational && (hdparm -B 254 -S 120 -W 0 -A 1 /dev/"$(echo "$DISK" | cut -d / -f 4)" || true); done
+for DISK in /sys/block/sd*; do grep -q 1 "${DISK}"/queue/rotational && (hdparm -W 0 -A 1 -B 127 -S 120 /dev/"$(echo "$DISK" | cut -d / -f 4)" || true); done
 
 echo "Configuring Queue Settings"
 # https://gist.github.com/v-fox/b7adbc2414da46e2c49e571929057429
 
+hdd_read_ahead_kb=2048
+
+for DISK in /sys/block/md*; do
+  echo $hdd_read_ahead_kb > "${DISK}"/queue/read_ahead_kb || true
+done
+
 for DISK in /sys/block/sd*; do
+  echo $hdd_read_ahead_kb > "${DISK}"/queue/read_ahead_kb || true
+
   echo 1 > "${DISK}"/queue/add_random
-  echo 2048 > "${DISK}"/queue/nr_requests
+  echo 1024 > "${DISK}"/queue/nr_requests
   cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/max_sectors_kb || true
-  cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/read_ahead_kb || true
-  echo 1 > "${DISK}"/queue/rq_affinity
-  echo 0 > "${DISK}"/queue/io_poll_delay
-  echo 0 > "${DISK}"/queue/nomerges
+  echo -1 > "${DISK}"/queue/io_poll_delay
 done
 
 for DISK in /sys/block/nvme*; do
+  echo 256 > "${DISK}"/queue/read_ahead_kb
+
   echo 0 > "${DISK}"/queue/add_random
-  echo 8 > "${DISK}"/queue/nr_requests
+  echo 128 > "${DISK}"/queue/nr_requests
   cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/max_sectors_kb || true
-  cat "${DISK}"/queue/max_hw_sectors_kb > "${DISK}"/queue/read_ahead_kb || true
-  echo 1 > "${DISK}"/queue/rq_affinity
   echo 0 > "${DISK}"/queue/io_poll_delay
-  echo 1 > "${DISK}"/queue/nomerges
-  echo 3333 > "${DISK}"/queue/wbt_lat_usec
-  echo 3333111 > "${DISK}"/queue/iosched/read_lat_nsec
-  echo 333111111 > "${DISK}"/queue/iosched/write_lat_nsec
+  echo 2000 > "${DISK}"/queue/wbt_lat_usec # Default 2000
+  echo 2000000 > "${DISK}"/queue/iosched/read_lat_nsec # Default 2000000
+  echo 10000000 > "${DISK}"/queue/iosched/write_lat_nsec # Default 10000000
 done
 
 echo "-----------------------------------------------------------"
 for DISK in /sys/block/bcache*; do
-  echo "Processing ${DISK}...."
-  # shellcheck disable=SC2086
   echo 0 > ${DISK}/queue/read_ahead_kb
+  echo "Processing ${DISK}...."
 
 #  echo writearound > "${DISK}"/bcache/cache_mode
   echo writeback > "${DISK}"/bcache/cache_mode
@@ -103,3 +104,9 @@ for DISK in /sys/block/bcache*; do
   echo "-------------------------------"
 done
 echo "-----------------------------------------------------------"
+
+ceph config set osd bluestore_min_alloc_size $(numfmt --from=iec 64K)
+ceph config set osd bluestore_cache_meta_ratio 0.10
+
+/bin/bash $(dirname "$(readlink -f "$0")")/ceph-osd-mclock.sh hdd 350
+/bin/bash $(dirname "$(readlink -f "$0")")/ceph-osd-mclock.sh nvme 100000

@@ -91,10 +91,16 @@ do
     DEVICE_TEMP_MIN=${!DEVICE_TEMP_MIN_OVERRIDE}
   fi
 
-  if [ -z "${DEVICE_TEMP}" ] || [ -z "${AMBIENT_TEMP}" ]; then
+  if [ -z "${AMBIENT_TEMP}" ]; then
     # If the condition that caused this to trigger is not resolved fans will spin up and down repeatedly as the service starts and then ends in error
-    echo "Unable to determine DEVICE_TEMP (${DEVICE_TEMP}) or AMBIENT_TEMP (${AMBIENT_TEMP}). Exiting!"
+    echo "Unable to determine AMBIENT_TEMP (${AMBIENT_TEMP}). Exiting!"
     exit 1
+  fi
+
+  if [ -z "${DEVICE_TEMP}" ]; then
+    DEVICE_TEMP=${AMBIENT_TEMP}
+    DEVICE_TEMP_MAX=60
+    DEVICE_TEMP_BIAS=0
   fi
 
   ## Clamp RATIOs to ensure curve remains between MIN/MAX
