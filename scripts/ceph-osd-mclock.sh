@@ -4,6 +4,7 @@
 set_osd_mclock_capacity() {
   local osd_id="$1"
   local capacity="$2"
+  local device_class="$3"
 
   # Check if capacity is provided
   if [[ -z "$capacity" ]]; then
@@ -17,13 +18,25 @@ set_osd_mclock_capacity() {
     return 1
   fi
 
-  # Inject the configuration
-  ceph config set osd."$osd_id" osd_mclock_max_capacity_iops_ssd "$capacity"
+  device_class='ssd' # Hack for force all to use SSD until I can figure out how to get hdd backed bcache block device to NOT be detected as an SSD
+
+  if [[ "$device_class" != "hdd" ]]; then
+    device_class='ssd'
+    ceph config rm osd."$osd_id" osd_mclock_max_capacity_iops_hdd
+    ceph config rm osd."$osd_id" osd_mclock_max_sequential_bandwidth_hdd
+    ceph config set osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd "2400Mi"
+  else
+    device_class='hdd'
+    ceph config rm osd."$osd_id" osd_mclock_max_capacity_iops_ssd
+    ceph config rm osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd
+  fi
+
+  ceph config set osd."$osd_id" osd_mclock_max_capacity_iops_"${device_class}" "$capacity"
 
   if [[ $? -eq 0 ]]; then
-    echo "Successfully set osd_mclock_max_capacity_iops_ssd to $capacity for OSD $osd_id"
+    echo "Successfully set osd_mclock_max_capacity_iops_${device_class} to $capacity for OSD $osd_id"
   else
-    echo "Error: Failed to set osd_mclock_max_capacity_iops_ssd for OSD $osd_id"
+    echo "Error: Failed to set osd_mclock_max_capacity_iops_${device_class} for OSD $osd_id"
     return 1
   fi
 }
@@ -63,16 +76,12 @@ for osd_id in $osd_ids; do
       capacity=$(( capacity * backing_drive_count ))
       echo "  Scaling capacity by backing_drive_count: ${backing_drive_count}"
     fi
-    set_osd_mclock_capacity "$osd_id" "$capacity"
 
     if [[ "$device_class" == "hdd" ]]; then
-#      ceph config rm osd."$osd_id" bluestore_deferred_batch_ops
-#      ceph config rm osd."$osd_id" bluestore_prefer_deferred_size #$(numfmt --from=iec 32K)
-#      ceph config rm osd."$osd_id" bluestore_compression_max_blob_size
-#      ceph config rm osd."$osd_id" bluestore_max_blob_size
-      ceph config rm osd."$osd_id" bluestore_cache_meta_ratio
-      ceph config rm osd."$osd_id" bluestore_min_alloc_size
+      echo 1 > /sys/block/${backing_device}/queue/rotational
     fi
+
+    set_osd_mclock_capacity "$osd_id" "$capacity" "$device_class"
   fi
   echo "Skip processing non-local ${device_class} OSD.${osd_id}"
 done

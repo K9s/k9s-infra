@@ -1,6 +1,8 @@
 [Unit]
 Description=Ceph Host Config
+Before=ceph-osd.target
 After=pve-storage.target
+After=ceph-mon.service
 
 [Service]
 Type=oneshot

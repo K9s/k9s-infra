@@ -90,17 +90,12 @@ for DISK in /sys/block/bcache*; do
   echo $(($(numfmt --from=iec $(( 8 * backing_drive_count ))M) / 512)) > "${DISK}/bcache/writeback_rate_minimum"
 #  echo 0 > "${DISK}/bcache/writeback_rate_minimum"
 
-  echo 0 > "${DISK}"/bcache/cache/internal/gc_after_writeback
+  echo 1 > "${DISK}"/bcache/cache/internal/gc_after_writeback
 
-#  WARNING DO NOT SET TO 1 THIS WILL RESULT IN DATALOSS
-  echo 0 > "${DISK}"/bcache/cache/cache0/discard
-
-  echo lru > "${DISK}"/bcache/cache/cache0/cache_replacement_policy
+  echo fifo > "${DISK}"/bcache/cache/cache0/cache_replacement_policy
 
   echo 0 > "${DISK}"/bcache/cache/congested_read_threshold_us
   echo 0 > "${DISK}"/bcache/cache/congested_write_threshold_us
-#  echo 2000 > "${DISK}"/bcache/cache/congested_read_threshold_us
-#  echo 20000 > "${DISK}"/bcache/cache/congested_write_threshold_us
   echo "-------------------------------"
 done
 echo "-----------------------------------------------------------"
@@ -109,4 +104,4 @@ ceph config set osd bluestore_min_alloc_size $(numfmt --from=iec 64K)
 ceph config set osd bluestore_cache_meta_ratio 0.10
 
 /bin/bash $(dirname "$(readlink -f "$0")")/ceph-osd-mclock.sh hdd 350
-/bin/bash $(dirname "$(readlink -f "$0")")/ceph-osd-mclock.sh nvme 100000
+/bin/bash $(dirname "$(readlink -f "$0")")/ceph-osd-mclock.sh nvme 120000
