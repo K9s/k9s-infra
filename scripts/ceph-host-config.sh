@@ -92,7 +92,7 @@ for DISK in /sys/block/bcache*; do
 
   echo 1 > "${DISK}"/bcache/cache/internal/gc_after_writeback
 
-  echo fifo > "${DISK}"/bcache/cache/cache0/cache_replacement_policy
+  echo lru > "${DISK}"/bcache/cache/cache0/cache_replacement_policy
 
   echo 0 > "${DISK}"/bcache/cache/congested_read_threshold_us
   echo 0 > "${DISK}"/bcache/cache/congested_write_threshold_us
