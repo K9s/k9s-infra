@@ -18,16 +18,17 @@ set_osd_mclock_capacity() {
     return 1
   fi
 
-  device_class='ssd' # Hack for force all to use SSD until I can figure out how to get hdd backed bcache block device to NOT be detected as an SSD
+  ceph config rm osd."$osd_id" osd_mclock_max_capacity_iops_ssd
+  ceph config rm osd."$osd_id" osd_mclock_max_capacity_iops_hdd
+  ceph config rm osd."$osd_id" osd_mclock_max_sequential_bandwidth_hdd
 
-  if [[ "$device_class" != "hdd" ]]; then
-    device_class='ssd'
-    ceph config rm osd."$osd_id" osd_mclock_max_capacity_iops_hdd
-    ceph config rm osd."$osd_id" osd_mclock_max_sequential_bandwidth_hdd
-    ceph config set osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd "2400Mi"
+  if [[ "$device_class" == "hdd" ]]; then
+    device_class='ssd' # Hack for force all to use SSD until I can figure out how to get hdd backed bcache block device to NOT be detected as an SSD
+    ceph config set osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd "150Mi"
+    ceph config set osd."$osd_id" bluestore_throttle_cost_per_io_ssd "100000"
+    ceph config set osd."$osd_id" bluestore_deferred_batch_ops_ssd "2048" # Should this align with nr_requests? Current 2x hdd nr_requests
   else
-    device_class='hdd'
-    ceph config rm osd."$osd_id" osd_mclock_max_capacity_iops_ssd
+    device_class='ssd'
     ceph config rm osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd
   fi
 
@@ -72,7 +73,7 @@ for osd_id in $osd_ids; do
 
     # Scale capacity by the number of drives backing the OSD
     if [[ $backing_device =~ bcache* ]]; then
-      backing_drive_count=$(lsblk | grep $backing_device | wc -l)
+      backing_drive_count=$(lsblk | grep "└─${backing_device}" | wc -l)
       capacity=$(( capacity * backing_drive_count ))
       echo "  Scaling capacity by backing_drive_count: ${backing_drive_count}"
     fi
