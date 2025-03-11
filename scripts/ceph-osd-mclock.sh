@@ -24,9 +24,11 @@ set_osd_mclock_capacity() {
 
   if [[ "$device_class" == "hdd" ]]; then
     device_class='ssd' # Hack for force all to use SSD until I can figure out how to get hdd backed bcache block device to NOT be detected as an SSD
-    ceph config set osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd "150Mi"
-    ceph config set osd."$osd_id" bluestore_throttle_cost_per_io_ssd "100000"
+    ceph config set osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd "500Mi"
+    ceph config set osd."$osd_id" bluestore_throttle_cost_per_io_ssd "25000"
     ceph config set osd."$osd_id" bluestore_deferred_batch_ops_ssd "2048" # Should this align with nr_requests? Current 2x hdd nr_requests
+    ceph config set osd."$osd_id" osd_op_num_shards_ssd 1             # Match _hdd defaults
+    ceph config set osd."$osd_id" osd_op_num_threads_per_shard_ssd 5  # Match _hdd defaults
   else
     device_class='ssd'
     ceph config rm osd."$osd_id" osd_mclock_max_sequential_bandwidth_ssd
