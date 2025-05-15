@@ -6,7 +6,7 @@ spec:
   interval: 1m
   chart:
     spec:
-      version: 8.11.1
+      version: 9.0.0
       chart: gitlab
       sourceRef:
         kind: HelmRepository
@@ -58,6 +58,9 @@ spec:
       install: false
 
     gitlab:
+      migrations:
+        enabled: true
+
       gitaly:
         securityContext:
           fsGroupChangePolicy: "OnRootMismatch"
