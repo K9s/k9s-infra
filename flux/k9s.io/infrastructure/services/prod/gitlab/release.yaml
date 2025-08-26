@@ -54,8 +54,7 @@ spec:
     nginx-ingress:
       ingressClassByName: true
 
-    certmanager:
-      install: false
+    installCertmanager: false
 
     gitlab:
       migrations:
